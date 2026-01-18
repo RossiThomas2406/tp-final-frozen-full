@@ -1,0 +1,321 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify"; // Importamos toast para feedback
+import styles from "./VerLotesProducto.module.css"; // Asegúrate de usar el CSS correcto
+
+const VerLotesProducto = ({ idMateriaPrima }) => {
+	const navigate = useNavigate();
+	const [datos, setDatos] = useState(null);
+	const [cargando, setCargando] = useState(true);
+	const [error, setError] = useState(null);
+
+	// Estados del Modal y Órdenes
+	const [modalAbierto, setModalAbierto] = useState(false);
+	const [ordenesLote, setOrdenesLote] = useState(null);
+	const [cargandoOrdenes, setCargandoOrdenes] = useState(false);
+	const [errorOrdenes, setErrorOrdenes] = useState(null);
+	const [loteSeleccionado, setLoteSeleccionado] = useState(null);
+
+	// Estado para el botón de alerta
+	const [enviandoAlerta, setEnviandoAlerta] = useState(false);
+
+	useEffect(() => {
+		const obtenerLotesProducto = async () => {
+			if (!idMateriaPrima) return;
+
+			setCargando(true);
+			setError(null);
+			try {
+				const response = await fetch(
+					`https://frozenback-test.up.railway.app/api/trazabilidad/lotes-producto-por-lote-mp/${idMateriaPrima}/`
+				);
+				if (!response.ok) {
+					throw new Error("Error al obtener los lotes de producto");
+				}
+				const data = await response.json();
+				setDatos(data);
+			} catch (err) {
+				setError(err.message);
+			} finally {
+				setCargando(false);
+			}
+		};
+
+		obtenerLotesProducto();
+	}, [idMateriaPrima]);
+
+	const obtenerOrdenesPorLote = async (idLoteProducto) => {
+		setCargandoOrdenes(true);
+		setErrorOrdenes(null);
+		setLoteSeleccionado(idLoteProducto);
+		try {
+			const response = await fetch(
+				`https://frozenback-test.up.railway.app/api/trazabilidad/ordenes-venta-por-lote-mp/${idLoteProducto}/`
+			);
+			if (!response.ok) {
+				throw new Error("Error al obtener las órdenes de venta");
+			}
+			const data = await response.json();
+			setOrdenesLote(data);
+			setModalAbierto(true);
+		} catch (err) {
+			setErrorOrdenes(err.message);
+		} finally {
+			setCargandoOrdenes(false);
+		}
+	};
+
+	// --- NUEVA FUNCIÓN: ENVIAR ALERTA ---
+	const enviarAlertaRiesgo = async () => {
+		// 1. Validación básica
+		if (!ordenesLote || !ordenesLote.ordenes_venta) return;
+
+		// 2. Filtramos las órdenes igual que en la tabla (Solo STOCK)
+		const ordenesAfectadas = ordenesLote.ordenes_venta.filter(
+			(orden) => orden.origen_asignacion === "STOCK (Deposito)"
+		);
+
+		if (ordenesAfectadas.length === 0) {
+			toast.warning("No hay órdenes directas de stock para notificar.");
+			return;
+		}
+
+
+		setEnviandoAlerta(true);
+
+		try {
+			// 4. Obtenemos los datos necesarios
+			const idsOrdenes = ordenesAfectadas.map((o) => o.id_orden_venta);
+
+			// Buscamos el nombre del producto en los datos originales del lote seleccionado
+			const loteActual = datos.lotes_produccion.find(
+				(l) => l.id_lote_produccion === loteSeleccionado
+			);
+			const nombreProducto = loteActual
+				? loteActual.producto_nombre
+				: "Producto Desconocido";
+
+			// 5. Llamada al Endpoint
+			const response = await fetch(
+				`https://frozenback-test.up.railway.app/api/trazabilidad/notificar-riesgo-lote/`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						ids_ordenes: idsOrdenes,
+						nombre_producto: nombreProducto,
+					}),
+				}
+			);
+
+			if (response.ok) {
+				const resData = await response.json();
+				toast.success(`¡Alerta enviada!"`);
+				cerrarModal(); // Opcional: cerrar modal al terminar
+			} else {
+				toast.error("Hubo un error al enviar las alertas.");
+			}
+		} catch (error) {
+			console.error("Error envío alerta:", error);
+			toast.error("Error de conexión al enviar alertas.");
+		} finally {
+			setEnviandoAlerta(false);
+		}
+	};
+
+	const cerrarModal = () => {
+		setModalAbierto(false);
+		setOrdenesLote(null);
+		setErrorOrdenes(null);
+		setLoteSeleccionado(null);
+	};
+
+	if (cargando) {
+		return (
+			<div className={styles.componente}>
+				<div className={styles.cargando}>Cargando lotes de producto...</div>
+			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div className={styles.componente}>
+				<div className={styles.error}>Error: {error}</div>
+			</div>
+		);
+	}
+
+	if (!datos || !datos.exito) {
+		return (
+			<div className={styles.componente}>
+				<p>No hay datos disponibles de lotes de producto</p>
+			</div>
+		);
+	}
+
+	return (
+		<div className={styles.componente}>
+			<h3>Lotes de Producto Relacionados</h3>
+			<div className={styles.infoResumen}>
+				<p>
+					<strong>Lote Materia Prima Origen:</strong>{" "}
+					{datos.lote_materia_prima_origen}
+				</p>
+				<p>
+					<strong>Cantidad Encontrada:</strong> {datos.cantidad_encontrada}
+				</p>
+			</div>
+
+			<div className={styles.lista}>
+				{datos.lotes_produccion.map((lote) => (
+					<div key={lote.id_lote_produccion} className={styles.tarjeta}>
+						<h4>Lote de Producción #{lote.id_lote_produccion}</h4>
+						<div className={styles.cardBody}>
+							<p>
+								<strong>Producto:</strong> {lote.producto_nombre}
+							</p>
+							<p>
+								<strong>Cantidad Producida:</strong> {lote.cantidad}
+							</p>
+							<p>
+								<strong>Fecha de Producción:</strong>{" "}
+								{new Date(lote.fecha_produccion).toLocaleDateString()}
+							</p>
+							<p>
+								<strong>ID Producto:</strong> {lote.id_producto}
+							</p>
+						</div>
+
+						<div className={styles.accionesContainer}>
+							<button
+								className={styles.botonVerLote}
+								onClick={() =>
+									navigate(`/trazabilidadLote/${lote.id_lote_produccion}`)
+								}
+							>
+								Ver Trazabilidad
+							</button>
+
+							<button
+								className={styles.botonVerOrdenes}
+								onClick={() => obtenerOrdenesPorLote(lote.id_lote_produccion)}
+								disabled={
+									cargandoOrdenes &&
+									loteSeleccionado === lote.id_lote_produccion
+								}
+							>
+								{cargandoOrdenes && loteSeleccionado === lote.id_lote_produccion
+									? "..."
+									: "Ver Órdenes"}
+							</button>
+						</div>
+					</div>
+				))}
+			</div>
+
+			{/* Modal para mostrar órdenes de venta */}
+			{modalAbierto && (
+				<div className={styles.modalOverlay} onClick={cerrarModal}>
+					<div
+						className={styles.modalContent}
+						onClick={(e) => e.stopPropagation()}
+					>
+						<div className={styles.modalHeader}>
+							<h3>Órdenes de Venta - Lote #{loteSeleccionado}</h3>
+							<button className={styles.botonCerrar} onClick={cerrarModal}>
+								×
+							</button>
+						</div>
+
+						<div className={styles.modalBody}>
+							{cargandoOrdenes ? (
+								<div className={styles.cargando}>
+									Cargando órdenes de venta...
+								</div>
+							) : errorOrdenes ? (
+								<div className={styles.error}>Error: {errorOrdenes}</div>
+							) : ordenesLote && ordenesLote.exito ? (
+								<>
+									<div className={styles.resumen}>
+										<p>
+											<strong>Lote Consultado:</strong>{" "}
+											{ordenesLote.lote_produccion_consultado}
+										</p>
+										<p>
+											<strong>Cantidad de Órdenes Vinculadas:</strong>{" "}
+											{ordenesLote.cantidad_ordenes_vinculadas}
+										</p>
+									</div>
+
+									<div className={styles.tablaOrdenes}>
+										<table>
+											<thead>
+												<tr>
+													<th>ID Orden</th>
+													<th>Cliente</th>
+													<th>Producto</th>
+													<th>Fecha Entrega</th>
+													<th>Cantidad Asignada</th>
+													<th>Origen</th>
+												</tr>
+											</thead>
+											<tbody>
+												{ordenesLote.ordenes_venta
+													.filter(
+														(orden) =>
+															orden.origen_asignacion === "STOCK (Deposito)"
+													)
+													.map((orden, index) => (
+														<tr key={`${orden.id_orden_venta}-${index}`}>
+															<td>{orden.id_orden_venta}</td>
+															<td>{orden.cliente}</td>
+															<td>{orden.producto}</td>
+															<td>
+																{new Date(
+																	orden.fecha_entrega
+																).toLocaleDateString()}
+															</td>
+															<td>{orden.cantidad_asignada}</td>
+															<td>{orden.origen_asignacion}</td>
+														</tr>
+													))}
+											</tbody>
+										</table>
+									</div>
+								</>
+							) : (
+								<p>No hay órdenes de venta disponibles para este lote</p>
+							)}
+						</div>
+
+						<div className={styles.modalFooter}>
+							{/* --- BOTÓN DE CERRAR --- */}
+							<button className={styles.botonSecundario} onClick={cerrarModal}>
+								Cerrar
+							</button>
+
+							{/* --- BOTÓN NUEVO: ENVIAR ALERTA --- */}
+							{/* Solo mostramos si hay órdenes cargadas y exitosas */}
+							{ordenesLote && ordenesLote.exito && (
+								<button
+									className={styles.botonAlerta}
+									onClick={enviarAlertaRiesgo}
+									disabled={enviandoAlerta}
+								>
+									{enviandoAlerta
+										? "Enviando..."
+										: "⚠️ Enviar Alerta a Clientes"}
+								</button>
+							)}
+						</div>
+					</div>
+				</div>
+			)}
+		</div>
+	);
+};
+
+export default VerLotesProducto;

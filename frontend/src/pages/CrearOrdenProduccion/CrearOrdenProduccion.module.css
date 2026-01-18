@@ -1,0 +1,397 @@
+/* Spinner igual al componente Ventas */
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+.spinnerSmall {
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3498db;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Loading container */
+.loading {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.loading p {
+  margin-top: 1rem;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* Estados de carga */
+.disabledInput {
+  background-color: #f9fafb !important;
+  color: #6b7280 !important;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+}
+
+.disabledButton {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+.submitButtonLoading {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.buttonLoadingContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* Overlay de creación de orden */
+.creatingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  z-index: 10;
+}
+
+.creatingContent {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.creatingText {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* Contenedor principal centrado */
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: #f8fdff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 70vh;
+}
+
+/* Wrapper para centrar el formulario */
+.formWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+/* Layout principal del formulario - AHORA CENTRADO */
+.formGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* Filas para agrupar campos horizontalmente */
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  align-items: start;
+}
+
+/* Grupos de formulario */
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Clase para campos que ocupan toda la fila */
+.formGroup.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.formLabel {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+/* Inputs estandarizados */
+.formInput {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  box-sizing: border-box;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.inputError {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.errorText {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+/* Botones de acción */
+.actionsContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  width: 100%;
+}
+
+.btn {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+}
+
+.btnSecondary {
+  background-color: #6b7280;
+  color: white;
+}
+
+.btnSecondary:hover {
+  background-color: #4b5563;
+}
+
+.submitButton {
+  padding: 0.75rem 2rem;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  min-width: 160px;
+}
+
+.submitButton:hover {
+  background-color: #1d4ed8;
+}
+
+/* Contenedor principal del formulario - AHORA MÁS COMPACTO Y CENTRADO */
+.divFormulario {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: white;
+  border: 1px solid #e1f5fe;
+  border-radius: 12px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 6px rgba(33, 150, 243, 0.1);
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 800px;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+/* Alertas */
+.alert {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  width: 100%;
+  text-align: center;
+}
+
+.alertSuccess {
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1px solid #16a34a;
+  color: #16a34a;
+}
+
+.alertError {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid #dc2626;
+  color: #dc2626;
+}
+
+/* Textos informativos */
+.loadingText {
+  color: #f59e0b;
+  font-weight: normal;
+  margin-left: 5px;
+  font-size: 0.75rem;
+}
+
+.successText {
+  color: #16a34a;
+  font-weight: normal;
+  margin-left: 5px;
+  font-size: 0.75rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .title {
+    font-size: 1.5rem;
+  }
+  
+  .divFormulario {
+    padding: 2rem;
+    margin: 0 1rem;
+  }
+  
+  .formRow {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .actionsContainer {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .btn, .submitButton {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+  }
+  
+  .divFormulario {
+    padding: 1.5rem;
+    margin: 0 0.5rem;
+  }
+  
+  .title {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .actionsContainer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+  }
+}
+
+/* Para pantallas grandes - límite máximo */
+@media (min-width: 1400px) {
+  .divFormulario {
+    max-width: 900px;
+  }
+}
+
+/* Agregar estos estilos al archivo CSS existente */
+
+.desperdicioInfo {
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  border-left: 4px solid #ffc107;
+}
+
+.warningText {
+  color: #856404;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.recommendationText {
+  color: #155724;
+  display: block;
+  font-weight: 500;
+}
+
+.infoText {
+  color: #0c5460;
+  display: block;
+}
+
+.loadingText {
+  color: #6c757d;
+  display: block;
+  font-style: italic;
+}
+
+/* Asegurar que los textos pequeños tengan buen contraste */
+.desperdicioInfo small {
+  font-size: 0.8rem;
+  line-height: 1.3;
+}

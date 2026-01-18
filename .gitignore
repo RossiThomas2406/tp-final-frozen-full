@@ -1,0 +1,10 @@
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Backend
+backend/__pycache__/
+backend/*.pyc
+backend/.venv/
+backend/.env
+backend/db.sqlite3  # Si usas Postgres no hace falta, pero por las dudas

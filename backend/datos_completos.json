@@ -1,0 +1,27 @@
+[
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$vWPGzckRmtNC5nQ45c4v0z$W0V+LmTe5kDZnQdGAdULMr8n2aHMBNvS3j+aRj0mhl4=",
+    "last_login": "2026-01-17T19:38:31.378Z",
+    "is_superuser": true,
+    "username": "tommy",
+    "first_name": "",
+    "last_name": "",
+    "email": "rossithomashernan@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-01-17T19:06:39.616Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "vetoocys6fakju3748x11dqygpdqezyk",
+  "fields": {
+    "session_data": ".eJxVjMsOwiAQRf-FtSEMUB4u3fsNZIaHVA0kpV0Z_12bdKHbe865LxZwW2vYRl7CnNiZATv9boTxkdsO0h3brfPY27rMxHeFH3Twa0_5eTncv4OKo35rA04XrQCK1FkZr5AgYYrCCEvZGCGF0toVJCsTkDSTKwIySW-9mgSw9wfCYjbK:1vhC7z:sCeBmadT2uUOgctkmpO9N3Ry7rJpyH0JPfBNt5vNnfk",
+    "expire_date": "2026-01-31T19:38:31.381Z"
+  }
+}
+]

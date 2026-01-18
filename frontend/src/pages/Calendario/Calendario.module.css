@@ -1,0 +1,714 @@
+.calendarContainer {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.mainTitle {
+  text-align: center;
+  color: #2c3e50;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 3px solid #3498db;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.calendar {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  overflow: hidden;
+}
+
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 10px;
+}
+
+.monthYear {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.monthYear h2 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.navButton {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: background-color 0.2s;
+}
+
+.navButton:hover {
+  background: #2980b9;
+}
+
+.todayButton {
+  background: #27ae60;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.todayButton:hover {
+  background: #219a52;
+}
+
+/* CORRECCIÓN CRÍTICA: Grids idénticos para días de semana y días del mes */
+.weekDays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  margin-bottom: 1px;
+  background: #ecf0f1;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+}
+
+.weekDay {
+  padding: 15px 5px;
+  text-align: center;
+  font-weight: 600;
+  color: #2c3e50;
+  background: #f8f9fa;
+  min-width: 0;
+  /* Mismos estilos que .day para alineación perfecta */
+  box-sizing: border-box;
+}
+
+.daysGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 1px;
+  background: #ecf0f1;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+  min-height: 600px;
+}
+
+/* CORRECCIÓN: Estilos idénticos de alineación para días */
+.day {
+  background: white;
+  padding: 8px 5px; /* Mismo padding horizontal que weekDay */
+  border: 1px solid #e9ecef;
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+  height: 100%;
+  min-width: 0;
+  position: relative;
+  box-sizing: border-box; /* Incluye padding en el cálculo del ancho */
+}
+
+.day.otherMonth {
+  background: #f8f9fa;
+  color: #adb5bd;
+}
+
+.day.today {
+  background: #fff3cd;
+}
+
+.clickableDay {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.clickableDay:hover {
+  background-color: #f8f9fa;
+}
+
+.clickableDay.today:hover {
+  background-color: #ffeaa7;
+}
+
+.dayNumber {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2c3e50;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 0.9rem;
+  padding: 0 2px; /* Padding consistente */
+}
+
+.day.otherMonth .dayNumber {
+  color: #adb5bd;
+}
+
+.day.today .dayNumber {
+  color: #e74c3c;
+  font-weight: 700;
+}
+
+.events {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 2px; /* Mismo padding que dayNumber */
+}
+
+.event {
+  padding: 4px 6px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-left: 3px solid;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.2;
+  min-height: 18px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.event:hover {
+  transform: translateX(2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* EVENT TYPES */
+.eventOP {
+  background: #fff9e6;
+  border-left-color: #ffc107;
+  color: #856404;
+}
+
+.eventOC {
+  background: #e3f2fd;
+  border-left-color: #2196f3;
+  color: #0d47a1;
+}
+
+.eventOV {
+  background: #e8f5e8;
+  border-left-color: #27ae60;
+  color: #155724;
+}
+
+.eventDefault {
+  background: #f5f5f5;
+  border-left-color: #757575;
+  color: #424242;
+}
+
+.statusEspera {
+  opacity: 0.8;
+  font-style: italic;
+}
+
+.statusProceso {
+  font-weight: 600;
+}
+
+.eventId {
+  font-weight: 700;
+  font-size: 0.65rem;
+  flex-shrink: 0;
+}
+
+.eventTitle {
+  font-size: 0.65rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.moreEvents {
+  font-size: 0.65rem;
+  color: #6c757d;
+  text-align: center;
+  padding: 3px 2px;
+  background: #f8f9fa;
+  border-radius: 2px;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legendColor {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+.legendOP {
+  background: #ffc107;
+}
+
+.legendOC {
+  background: #2196f3;
+}
+
+.legendOV {
+  background: #27ae60;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 40px;
+  font-size: 1.2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.loading {
+  color: #6c757d;
+  background: #fff;
+}
+
+.error {
+  color: #e74c3c;
+  background: #fadbd8;
+  margin: 20px;
+}
+
+/* Modal Styles */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  animation: modalAppear 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e9ecef;
+  background: #f8f9fa;
+  flex-shrink: 0;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #6c757d;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.closeButton:hover {
+  background: #e9ecef;
+  color: #2c3e50;
+}
+
+.modalBody {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  min-height: 200px;
+  max-height: calc(90vh - 140px);
+}
+
+.noEvents {
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  padding: 40px 20px;
+  font-size: 1.1rem;
+}
+
+.eventsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalEvent {
+  padding: 16px;
+  border-radius: 8px;
+  border-left: 4px solid;
+  background: #f8f9fa;
+}
+
+.modalEventHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.modalEventId {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #2c3e50;
+}
+
+.modalEventStatus {
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.modalEventTitle {
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 600;
+  word-wrap: break-word;
+}
+
+.modalEventDetails {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.modalEventDetail {
+  font-size: 0.9rem;
+  color: #495057;
+  word-wrap: break-word;
+}
+
+.modalEventDetail strong {
+  color: #2c3e50;
+  display: inline-block;
+  min-width: 80px;
+}
+
+.modalFooter {
+  padding: 16px 24px;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  background: white;
+}
+
+.modalCloseButton {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.modalCloseButton:hover {
+  background: #5a6268;
+}
+
+/* MODAL EVENT TYPES */
+.modalEvent.eventOP {
+  background: #fff9e6;
+  border-left-color: #ffc107;
+}
+
+.modalEvent.eventOC {
+  background: #e3f2fd;
+  border-left-color: #2196f3;
+}
+
+.modalEvent.eventOV {
+  background: #e8f5e8;
+  border-left-color: #27ae60;
+}
+
+.modalEvent.eventDefault {
+  background: #f5f5f5;
+  border-left-color: #757575;
+}
+
+/* Scrollbar */
+.modalBody::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modalBody::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.modalBody::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.modalBody::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .calendarContainer {
+    padding: 10px;
+  }
+  
+  .mainTitle {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  .calendar {
+    padding: 10px;
+  }
+  
+  .calendarHeader {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .monthYear {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .monthYear h2 {
+    font-size: 1.4rem;
+  }
+  
+  .weekDay {
+    padding: 12px 3px;
+    font-size: 0.9rem;
+  }
+  
+  .day {
+    min-height: 100px;
+    padding: 6px 3px; /* Mismo padding que weekDay */
+  }
+  
+  .dayNumber {
+    font-size: 0.8rem;
+    padding: 0 1px;
+  }
+  
+  .events {
+    padding: 0 1px;
+  }
+  
+  .event {
+    font-size: 0.6rem;
+    padding: 3px 4px;
+    min-height: 16px;
+  }
+  
+  .events {
+    gap: 1px;
+  }
+  
+  .eventTitle {
+    font-size: 0.6rem;
+  }
+  
+  .eventId {
+    font-size: 0.6rem;
+  }
+  
+  .legend {
+    flex-direction: column;
+    gap: 15px;
+    padding: 10px;
+  }
+  
+  .daysGrid {
+    min-height: 500px;
+  }
+  
+  .modal {
+    max-width: 95%;
+    max-height: 95vh;
+  }
+  
+  .modalHeader {
+    padding: 16px 20px;
+  }
+  
+  .modalHeader h2 {
+    font-size: 1.3rem;
+  }
+  
+  .modalBody {
+    padding: 20px;
+    max-height: calc(95vh - 130px);
+  }
+  
+  .modalEventDetails {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  
+  .modalEventHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .modalEventStatus {
+    align-self: flex-start;
+  }
+  
+  .modalEventDetail strong {
+    min-width: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  .weekDay {
+    padding: 10px 2px;
+    font-size: 0.8rem;
+  }
+  
+  .day {
+    min-height: 80px;
+    padding: 4px 2px; /* Mismo padding que weekDay */
+  }
+  
+  .event {
+    font-size: 0.55rem;
+    padding: 2px 3px;
+    min-height: 14px;
+  }
+  
+  .dayNumber {
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+    padding: 0;
+  }
+  
+  .daysGrid {
+    min-height: 400px;
+  }
+  
+  .overlay {
+    padding: 10px;
+  }
+  
+  .modal {
+    max-width: 100%;
+    max-height: 98vh;
+  }
+  
+  .modalHeader {
+    padding: 12px 16px;
+  }
+  
+  .modalBody {
+    padding: 16px;
+    max-height: calc(98vh - 120px);
+  }
+  
+  .modalEvent {
+    padding: 12px;
+  }
+  
+  .modalEventTitle {
+    font-size: 1rem;
+  }
+  
+  .modalEventDetails {
+    font-size: 0.85rem;
+  }
+  
+  .eventsList {
+    gap: 12px;
+  }
+}

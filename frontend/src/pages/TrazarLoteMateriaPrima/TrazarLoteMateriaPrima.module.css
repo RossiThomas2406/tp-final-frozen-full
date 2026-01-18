@@ -1,0 +1,448 @@
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 15px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #ffffff;
+  min-height: 100vh;
+  overflow-x: hidden; /* Previene scroll horizontal */
+}
+
+/* Header Principal */
+.header {
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.titleContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 15px;
+  flex-wrap: wrap; /* Permite que los elementos se ajusten */
+}
+
+.title {
+  color: #2c3e50;
+  font-size: 1.8rem; /* Reducido para móviles */
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+  text-align: center;
+  word-break: break-word; /* Evita desbordamiento de texto */
+}
+
+/* Botón Tutorial */
+.botonTutorial {
+  width: 32px;
+  height: 32px;
+  border: 2px solid #007bff;
+  background-color: white;
+  color: #007bff;
+  border-radius: 50%;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.botonTutorial:hover {
+  background-color: #007bff;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Botones de Acción */
+.accionesContainer {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 20px 0;
+  flex-wrap: wrap; /* Permite que los botones se apilen */
+}
+
+.botonCuarentena,
+.botonHabilitar {
+  padding: 12px 16px;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+  flex: 1;
+  max-width: 200px; /* Ancho máximo en móviles */
+}
+
+.botonCuarentena {
+  background-color: #e74c3c;
+}
+
+.botonCuarentena:hover:not(:disabled) {
+  background-color: #c0392b;
+}
+
+.botonHabilitar {
+  background-color: #27ae60;
+}
+
+.botonHabilitar:hover:not(:disabled) {
+  background-color: #229954;
+}
+
+.botonCuarentena:disabled,
+.botonHabilitar:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Card de Información */
+.infoCard {
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 25px;
+  overflow: hidden; /* Previene desbordamiento */
+}
+
+.cardTitle {
+  color: #2c3e50;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0 0 15px 0;
+  text-align: center;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  color: #6c757d;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.value {
+  font-size: 15px;
+  color: #2c3e50;
+  font-weight: 500;
+  word-break: break-word; /* Evita desbordamiento */
+}
+
+.estadoHighlight {
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: #d4edda;
+  color: #155724;
+  font-size: 13px;
+  font-weight: 600;
+  width: fit-content;
+  border: 1px solid #c3e6cb;
+}
+
+/* Selector de Vista */
+.selectorVista {
+  display: flex;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 6px;
+  margin-bottom: 20px;
+  gap: 6px;
+  flex-wrap: wrap; /* Para pantallas muy pequeñas */
+}
+
+.botonVista {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  min-width: 140px; /* Ancho mínimo */
+}
+
+.botonVista:hover {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.botonActivo {
+  background: #3498db;
+  color: white;
+}
+
+.botonActivo:hover {
+  background: #3498db;
+  color: white;
+}
+
+/* Área de Contenido - CRÍTICO PARA RESPONSIVE */
+.contenidoVista {
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 15px;
+  min-height: 200px;
+  overflow-x: auto; /* Scroll horizontal solo si es necesario */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Contenedor para los componentes hijos - asegura responsividad */
+.contenidoHijo {
+  width: 100%;
+  overflow-x: auto;
+  min-width: 0; /* Permite que se reduzca */
+}
+
+/* Estados de carga */
+.loadingInfo {
+  text-align: center;
+  padding: 30px 15px;
+  color: #6c757d;
+  font-style: italic;
+  font-size: 16px;
+}
+
+.errorContainer {
+  text-align: center;
+  padding: 40px 20px;
+  color: #721c24;
+  background: #f8d7da;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease-out;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+.modalContent {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  transform: scale(1);
+  animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modalTitle {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.modalText {
+  font-size: 0.95rem;
+  color: #4b5563;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btnCancelar,
+.btnConfirmar {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+  min-width: 120px;
+  max-width: 160px;
+}
+
+.btnCancelar {
+  background-color: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.btnCancelar:hover:not(:disabled) {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.btnConfirmar {
+  background-color: #2563eb;
+  color: white;
+  border: 1px solid #2563eb;
+  font-weight: 600;
+}
+
+.btnConfirmar:hover:not(:disabled) {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.btnCancelar:disabled,
+.btnConfirmar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* --- MEDIA QUERIES PARA MÓVILES --- */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .accionesContainer {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .botonCuarentena,
+  .botonHabilitar {
+    width: 100%;
+    max-width: 280px;
+    padding: 14px 16px;
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .infoCard {
+    padding: 15px;
+  }
+
+  .selectorVista {
+    flex-direction: column;
+  }
+
+  .botonVista {
+    min-width: 100%;
+  }
+
+  .contenidoVista {
+    padding: 12px;
+    margin: 0 -5px; /* Compensa el padding del container */
+    width: calc(100% + 10px); /* Asegura que ocupe todo el ancho disponible */
+  }
+
+  .modalContent {
+    padding: 1.25rem;
+    margin: 10px;
+  }
+
+  .modalActions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .btnCancelar,
+  .btnConfirmar {
+    width: 100%;
+    max-width: none;
+    padding: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.3rem;
+  }
+
+  .titleContainer {
+    gap: 8px;
+  }
+
+  .botonTutorial {
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+  }
+
+  .cardTitle {
+    font-size: 1.2rem;
+  }
+
+  .label {
+    font-size: 12px;
+  }
+
+  .value {
+    font-size: 14px;
+  }
+
+  .contenidoVista {
+    padding: 10px;
+    border-radius: 6px;
+  }
+}

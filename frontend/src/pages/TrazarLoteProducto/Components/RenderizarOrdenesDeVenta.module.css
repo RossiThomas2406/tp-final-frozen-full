@@ -1,0 +1,428 @@
+.container {
+	padding: 1rem;
+}
+
+.title {
+	color: #1f2937;
+	font-size: 1.5rem;
+	font-weight: 600;
+	margin-bottom: 1.5rem;
+	text-align: center;
+}
+
+/* --- ESTADOS DE CARGA / ERROR --- */
+.cargando {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 3rem;
+	text-align: center;
+	color: #6b7280;
+}
+
+.spinner {
+	border: 4px solid #f3f3f3;
+	border-top: 4px solid #3b82f6;
+	border-radius: 50%;
+	width: 40px;
+	height: 40px;
+	animation: spin 1s linear infinite;
+	margin-bottom: 1rem;
+}
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+.errorContainer {
+	background: #fee2e2;
+	border: 1px solid #fecaca;
+	color: #dc2626;
+	padding: 1.5rem;
+	border-radius: 0.5rem;
+	text-align: center;
+	margin: 1rem 0;
+}
+
+.sinDatos {
+	text-align: center;
+	padding: 3rem;
+	background: #f9fafb;
+	border-radius: 0.5rem;
+	border: 1px dashed #d1d5db;
+	color: #6b7280;
+}
+
+/* --- CONTROLES Y FILTROS --- */
+.controles {
+	display: grid;
+	grid-template-columns: 1fr 1fr auto;
+	gap: 1rem;
+	margin-bottom: 1.5rem;
+	background: white;
+	padding: 1.5rem;
+	border-radius: 0.5rem;
+	border: 1px solid #e1f5fe;
+	box-shadow: 0 2px 4px rgba(33, 150, 243, 0.1);
+	align-items: end;
+}
+
+.filtroGrupo {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.label {
+	font-weight: 600;
+	color: #374151;
+	font-size: 0.875rem;
+}
+
+.reactSelect {
+	width: 100%;
+}
+
+/* Ajustes específicos para React Select para que coincida con el diseño */
+.reactSelect :global(.react-select__control) {
+	border-color: #d1d5db;
+	min-height: 42px;
+}
+.reactSelect :global(.react-select__control--is-focused) {
+	border-color: #3b82f6;
+	box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.btnLimpiar {
+	background: #6b7280;
+	color: white;
+	border: none;
+	padding: 0.6rem 1.2rem;
+	border-radius: 0.375rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.2s;
+	height: 42px; /* Para alinear con los inputs */
+}
+
+.btnLimpiar:hover {
+	background: #4b5563;
+}
+
+/* --- ESTADÍSTICAS --- */
+.estadisticas {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 1rem;
+	margin-bottom: 2rem;
+}
+
+.estadisticaItem {
+	background: white;
+	padding: 1rem;
+	border-radius: 0.5rem;
+	border: 1px solid #e5e7eb;
+	text-align: center;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.estadisticaNumero {
+	display: block;
+	font-size: 1.5rem;
+	font-weight: bold;
+	color: #3b82f6;
+}
+
+.estadisticaLabel {
+	color: #6b7280;
+	font-size: 0.875rem;
+	font-weight: 500;
+}
+
+/* --- LISTA DE TARJETAS (NUEVO DISEÑO) --- */
+.listaOrdenes {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.cardOrden {
+	background: white;
+	border: 1px solid #e5e7eb;
+	border-radius: 0.75rem;
+	overflow: hidden; /* Para que el borde no corte esquinas */
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+	transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.cardOrden:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	border-color: #93c5fd;
+}
+
+.cardHeaderSimple {
+	background-color: #f8fafc;
+	padding: 1rem 1.5rem;
+	border-bottom: 1px solid #e5e7eb;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.headerLeft {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.ordenId {
+	margin: 0;
+	color: #1f2937;
+	font-size: 1.1rem;
+	font-weight: 700;
+}
+
+.tagOrigen {
+	background-color: #dbeafe; /* Azul muy claro */
+	color: #1e40af; /* Azul oscuro */
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	border: 1px solid #bfdbfe;
+}
+
+.fechaEntrega {
+	font-size: 0.9rem;
+	color: #6b7280;
+}
+
+.cardBodyGrid {
+	padding: 1.5rem;
+	display: grid;
+	grid-template-columns: 1.5fr 1.5fr 1fr; /* Cliente, Producto, Cantidad */
+	gap: 1.5rem;
+	align-items: center;
+}
+
+.dataItem {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.dataLabel {
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	color: #9ca3af;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+}
+
+.dataValue {
+	font-size: 1rem;
+	color: #374151;
+}
+
+.dataValueClient {
+	font-size: 1.1rem;
+	color: #111827;
+	font-weight: 500;
+}
+
+.dataValueDestacado {
+	font-size: 1.2rem;
+	color: #059669; /* Verde esmeralda */
+	font-weight: 700;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+	.controles {
+		grid-template-columns: 1fr;
+	}
+
+	.cardBodyGrid {
+		grid-template-columns: 1fr; /* Una columna en móvil */
+		gap: 1rem;
+	}
+
+	.cardHeaderSimple {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.btnLimpiar {
+		width: 100%;
+	}
+}
+/* --- BARRA DE ACCIONES (BOTÓN DE ALERTA) --- */
+.accionesBar {
+	display: flex;
+	justify-content: flex-start; /* Botón a la derecha */
+	margin-bottom: 1.5rem;
+	padding-bottom: 1.5rem;
+	border-bottom: 1px solid #e5e7eb;
+}
+
+.botonAlertaMasiva {
+	background-color: #ef4444; /* Rojo */
+	color: white;
+	border: none;
+	padding: 0.75rem 1.5rem;
+	border-radius: 0.5rem;
+	font-size: 1rem;
+	font-weight: 600;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	transition: all 0.2s ease;
+	box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+}
+
+.botonAlertaMasiva:hover:not(:disabled) {
+	background-color: #dc2626; /* Rojo más oscuro */
+	box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);
+	transform: translateY(-1px);
+}
+
+.botonAlertaMasiva:disabled {
+	background-color: #f3f4f6;
+	color: #9ca3af;
+	cursor: wait;
+	box-shadow: none;
+}
+
+/* --- ESTILOS DEL MODAL --- */
+.modalOverlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	backdrop-filter: blur(4px);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 2000;
+	animation: fadeIn 0.2s ease-out;
+}
+
+.modalContent {
+	background: white;
+	padding: 2rem;
+	border-radius: 0.75rem;
+	box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+	width: 90%;
+	max-width: 450px;
+	text-align: center;
+	animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modalTitle {
+	margin-top: 0;
+	margin-bottom: 1rem;
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: #1f2937;
+}
+
+.modalText {
+	font-size: 1rem;
+	color: #4b5563;
+	margin-bottom: 2rem;
+	line-height: 1.6;
+}
+
+.modalActions {
+	display: flex;
+	justify-content: center;
+	gap: 1rem;
+}
+
+/* Botón Cancelar */
+.btnCancelar {
+	background-color: white;
+	color: #374151;
+	border: 1px solid #d1d5db;
+	padding: 0.75rem 1.5rem;
+	border-radius: 0.5rem;
+	font-size: 0.95rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.btnCancelar:hover:not(:disabled) {
+	background-color: #f3f4f6;
+}
+
+/* Botón Confirmar Peligro (Rojo para alertas) */
+.btnConfirmarPeligro {
+	background-color: #ef4444;
+	color: white;
+	border: 1px solid #ef4444;
+	padding: 0.75rem 1.5rem;
+	border-radius: 0.5rem;
+	font-size: 0.95rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s;
+	box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2);
+}
+
+.btnConfirmarPeligro:hover:not(:disabled) {
+	background-color: #dc2626;
+	border-color: #dc2626;
+	transform: translateY(-1px);
+}
+
+.btnCancelar:disabled,
+.btnConfirmarPeligro:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+@keyframes scaleUp {
+	from {
+		transform: scale(0.95);
+		opacity: 0;
+	}
+	to {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+	.modalActions {
+		flex-direction: column-reverse;
+		gap: 0.75rem;
+	}
+	.btnCancelar,
+	.btnConfirmarPeligro {
+		width: 100%;
+	}
+}

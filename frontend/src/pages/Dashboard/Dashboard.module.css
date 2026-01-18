@@ -1,0 +1,866 @@
+.dashboard {
+  padding: 24px;
+  background-color: #f8fafc;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Header */
+.header {
+  margin-bottom: 32px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.headerTitles {
+  text-align: left;
+}
+
+.headerTitles h1 {
+  color: #1a202c;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.headerTitles p {
+  color: #718096;
+  margin: 4px 0 0 0;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+/* Grid Principal */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 40px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+/* Sección de KPIs */
+.kpiSection {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 20px;
+}
+
+/* Cards Base */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  transition: box-shadow 0.2s ease;
+  width: 100%;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 40px;
+}
+
+.cardHeader h3 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* KPI Cards */
+.kpiCard {
+  display: flex;
+  flex-direction: column;
+  min-height: 180px;
+}
+
+.oeeMainCard {
+  grid-column: 1;
+}
+
+.kpiValue {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.kpiNumber {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.kpiSubtitle {
+  font-size: 0.9rem;
+  color: #718096;
+  font-weight: 500;
+}
+
+/* OEE Gauge */
+.oeeContainer {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.oeeGauge {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+}
+
+.gaugeBackground {
+  width: 100%;
+  height: 100%;
+  background: #f7fafc;
+  border-radius: 50%;
+  position: relative;
+  border: 8px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gaugeFill {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  border-radius: 50%;
+  border: 8px solid transparent;
+  border-top: 8px solid;
+  transform-origin: center;
+  transition: transform 0.8s ease;
+}
+
+.gaugeCenter {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.gaugeNumber {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2d3748;
+  display: block;
+  line-height: 1;
+}
+
+.gaugeLabel {
+  font-size: 0.8rem;
+  color: #718096;
+  margin-top: 4px;
+}
+
+.gaugeTarget {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.targetLine {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%) rotate(153deg); /* 85% * 1.8 = 153deg */
+  width: 2px;
+  height: 20px;
+  background: #2d3748;
+}
+
+.targetLabel {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  color: #718096;
+  font-weight: 500;
+}
+
+/* OEE Status */
+.oeeStatus {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f7fafc;
+  border-radius: 8px;
+  border-left: 4px solid;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.statusText {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.performanceDelta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f7fafc;
+  border-radius: 8px;
+}
+
+.deltaLabel {
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.deltaValue {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.positive {
+  color: #38a169;
+}
+
+.negative {
+  color: #e53e3e;
+}
+
+/* Componentes OEE */
+.componentsSection {
+  grid-column: 1;
+}
+
+.componentsCard {
+  min-height: 200px;
+}
+
+.componentsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.componentItem {
+  padding: 20px;
+  background: #f7fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.componentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.componentHeader h4 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.componentValue {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.currentValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.targetValue {
+  font-size: 0.9rem;
+  color: #718096;
+}
+
+/* Progress Bars */
+.progressContainer {
+  width: 100%;
+}
+
+.progressBar {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s ease;
+  position: relative;
+}
+
+.targetMarker {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: #2d3748;
+  z-index: 2;
+}
+
+/* Traffic Lights */
+.trafficLight {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.trafficExcellent {
+  color: #38a169;
+}
+
+.trafficGood {
+  color: #3182ce;
+}
+
+.trafficWarning {
+  color: #dd6b20;
+}
+
+.trafficPoor {
+  color: #e53e3e;
+}
+
+.trafficExcellent .progressFill {
+  background: #38a169;
+}
+
+.trafficGood .progressFill {
+  background: #3182ce;
+}
+
+.trafficWarning .progressFill {
+  background: #dd6b20;
+}
+
+.trafficPoor .progressFill {
+  background: #e53e3e;
+}
+
+.trafficExcellent.statusIndicator {
+  border-left-color: #38a169;
+}
+
+.trafficGood.statusIndicator {
+  border-left-color: #3182ce;
+}
+
+.trafficWarning.statusIndicator {
+  border-left-color: #dd6b20;
+}
+
+.trafficPoor.statusIndicator {
+  border-left-color: #e53e3e;
+}
+
+/* Chart Cards */
+.chartCard {
+  grid-column: 1;
+  min-height: 400px;
+}
+
+.chartContainer {
+  height: 300px;
+  margin-top: 15px;
+  position: relative;
+}
+
+/* Objetivo Tag */
+.objetivoTag {
+  background: #edf2f7;
+  color: #4a5568;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Botón de Reporte */
+.reporteButton {
+  background: #2d3748;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.reporteButton:hover:not(:disabled) {
+  background: #4a5568;
+  transform: translateY(-1px);
+}
+
+.reporteButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.reporteButton.generando {
+  background: #718096;
+}
+
+/* Loading */
+.loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e2e8f0;
+  border-left: 4px solid #3182ce;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+.loadingBadge {
+  background: #edf2f7;
+  color: #4a5568;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Spinner para el botón */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .dashboard {
+    padding: 20px;
+  }
+  
+  .header, .grid {
+    max-width: 1000px;
+  }
+  
+  .kpiSection {
+    grid-template-columns: 1fr;
+  }
+  
+  .componentsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .oeeContainer {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 16px;
+  }
+  
+  .headerContent {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .headerTitles {
+    text-align: left;
+    width: 100%;
+  }
+  
+  .headerTitles h1 {
+    font-size: 1.5rem;
+  }
+  
+  .reporteButton {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .kpiNumber {
+    font-size: 2rem;
+  }
+  
+  .oeeGauge {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .gaugeNumber {
+    font-size: 1.5rem;
+  }
+  
+  .chartContainer {
+    height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard {
+    padding: 12px;
+  }
+  
+  .card {
+    padding: 16px;
+  }
+  
+  .kpiNumber {
+    font-size: 1.8rem;
+  }
+  
+  .currentValue {
+    font-size: 1.3rem;
+  }
+  
+  .componentsGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .componentItem {
+    padding: 16px;
+  }
+  
+  .oeeContainer {
+    gap: 20px;
+  }
+}
+
+/* Asegurar que todo esté centrado en pantallas grandes */
+@media (min-width: 1201px) {
+  .dashboard {
+    padding: 32px;
+  }
+  
+  .header, .grid {
+    max-width: 1200px;
+  }
+}
+
+/* OEE Gauge Corregido */
+.gaugeWrapper {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gaugeSvg {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.gaugeCenter {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.gaugeNumber {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2d3748;
+  display: block;
+  line-height: 1;
+}
+
+.gaugeLabel {
+  font-size: 0.8rem;
+  color: #718096;
+  margin-top: 4px;
+}
+
+.targetLabel {
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  color: #718096;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Componentes Summary */
+.componentsSummary {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f7fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.componentSummaryItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.componentSummaryItem:last-child {
+  margin-bottom: 0;
+}
+
+.summaryLabel {
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+.summaryValue {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+/* OEE Container mejorado */
+.oeeContainer {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.oeeGauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.oeeStatus {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .oeeContainer {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 24px;
+  }
+  
+  .gaugeWrapper {
+    width: 140px;
+    height: 140px;
+  }
+  
+  .gaugeNumber {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .gaugeWrapper {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .gaugeNumber {
+    font-size: 1.5rem;
+  }
+}
+
+.componentDescription {
+  font-size: 0.8rem;
+  color: #718096;
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+.oeeFormula {
+  font-size: 0.7rem;
+  color: #718096;
+  margin-top: 8px;
+  line-height: 1.2;
+  font-style: italic;
+}
+
+.debugBadge {
+  background: #f0f0f0;
+  color: #666;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  margin-left: 8px;
+}
+
+.dataSourceInfo {
+  display: flex;
+  gap: 12px;
+  font-size: 0.75rem;
+}
+
+.realDataBadge {
+  color: #38a169;
+  font-weight: 500;
+}
+
+.mockDataBadge {
+  color: #718096;
+  font-weight: 500;
+}
+
+/* Agregar estos estilos al archivo CSS */
+
+/* Mejoras para la generación de PDF */
+.card {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.chartContainer {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.kpiSection {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.componentsSection {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+/* Asegurar que los gráficos se rendericen completamente */
+.chartCard {
+  min-height: auto !important;
+}
+
+/* Mejorar la legibilidad en PDF */
+.cardHeader {
+  margin-bottom: 20px;
+}
+
+.kpiValue {
+  padding: 10px 0;
+}
+
+/* Para secciones específicas que necesitan más espacio */
+.oeeMainCard {
+  min-height: 280px;
+}
+
+.componentsCard {
+  min-height: 240px;
+}
+
+/* Asegurar contraste suficiente para impresión */
+.dashboard {
+  background-color: white !important;
+}
+
+.card {
+  background: white !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+}
+
+/* Mejorar textos para PDF */
+.cardHeader h3 {
+  color: #000 !important;
+  font-weight: 700 !important;
+}
+
+.kpiNumber {
+  color: #000 !important;
+}
+
+/* Responsive para PDF */
+@media print {
+  .dashboard {
+    padding: 0 !important;
+    background: white !important;
+  }
+  
+  .card {
+    margin-bottom: 20px !important;
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+}
+
