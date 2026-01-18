@@ -268,46 +268,50 @@ def cancelar_orden_view(request, orden_id):
         except OrdenVenta.DoesNotExist:
             return Response({"error": "Orden de venta no encontrada."}, status=status.HTTP_404_NOT_FOUND)
 
-
-
-
+# ventas/views.py
 @csrf_exempt
 def listar_ordenes_venta(request):
     if request.method == "GET":
         try:
-
-            ordenes = OrdenVenta.objects.all().order_by("-fecha")
-
+            # Traemos todo de una vez para que sea rápido
+            ordenes = OrdenVenta.objects.all().select_related(
+                "id_cliente", "id_estado_venta", "id_prioridad", "id_empleado"
+            ).order_by("-fecha")
+            
             data = []
             for orden in ordenes:
-                productos = [
+                # DETALLE CLAVE: Aquí incluimos los productos
+                productos_detalle = [
                     {
-                        "id_producto": op.id_producto.id_producto,
-                        "producto": op.id_producto.nombre,
-                        "tipo": op.id_producto.id_tipo_producto.descripcion if op.id_producto.id_tipo_producto else None,
-                        "unidad": op.id_producto.id_unidad.descripcion if op.id_producto.id_unidad else None,
-                        "cantidad": op.cantidad
+                        "id_orden_venta_producto": op.pk,
+                        "cantidad": op.cantidad,
+                        "producto": {
+                            "nombre": op.id_producto.nombre,
+                            "unidad": {
+                                "descripcion": op.id_producto.id_unidad.descripcion if op.id_producto.id_unidad else "unidad"
+                            }
+                        }
                     }
                     for op in OrdenVentaProducto.objects.filter(id_orden_venta=orden)
                 ]
 
                 data.append({
                     "id_orden_venta": orden.id_orden_venta,
-                    "fecha": orden.fecha.strftime("%Y-%m-%d %H:%M:%S") if orden.fecha else None,
-                    "fecha_entrega": orden.fecha_entrega.strftime("%Y-%m-%d %H:%M:%S") if orden.fecha_entrega else None,
-                    "prioridad": orden.id_prioridad.descripcion,
-                    "cliente": orden.id_cliente.nombre if orden.id_cliente else None,
-                    "estado_venta": orden.id_estado_venta.descripcion if orden.id_estado_venta else None,
-                    "productos": productos
+                    "fecha": orden.fecha.isoformat() if orden.fecha else None,
+                    "fecha_entrega": orden.fecha_entrega.isoformat() if orden.fecha_entrega else None,
+                    "cliente": { "nombre": orden.id_cliente.nombre if orden.id_cliente else "Juan" },
+                    "empleado_usuario": orden.id_empleado.usuario if orden.id_empleado else "admin_erp",
+                    "estado_venta": {
+                        "id_estado_venta": orden.id_estado_venta.id_estado_venta,
+                        "descripcion": orden.id_estado_venta.descripcion
+                    },
+                    "productos": productos_detalle # <-- ESTO HACE QUE APAREZCAN
                 })
 
+            # IMPORTANTE: Devolvemos la lista directamente, no dentro de "results"
             return JsonResponse(data, safe=False, status=200)
-
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
-
-    return JsonResponse({"error": "Método no permitido"}, status=405)
-
 
 @csrf_exempt
 def crear_orden_venta(request):

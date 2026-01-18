@@ -281,54 +281,19 @@ const Ventas = () => {
 	const fetchOrdenes = async (pagina = 1) => {
 		try {
 			setLoading(true);
+			// CAMBIO DE URL: Usamos /listar/ en lugar de /ordenes-venta/
+			const response = await api.get(`/ventas/ordenes-venta/listar/`);
 
-			// Construir parámetros de filtro
-			const params = new URLSearchParams();
-			params.append("page", pagina.toString());
-
-			if (filtroId.trim() !== "") {
-				params.append("id_orden_venta", filtroId.trim());
-			} else {
-				// Si no hay ID, usar los otros filtros
-				if (filtroEstado !== "todos" && filtroEstado !== "") {
-					params.append("estado", filtroEstado);
-				}
-				if (filtroCliente !== "todos" && filtroCliente !== "") {
-					params.append("cliente", filtroCliente);
-				}
-				if (filtroPrioridad !== "todos" && filtroPrioridad !== "") {
-					params.append("prioridad", filtroPrioridad);
-				}
-			}
-
-			const response = await api.get(
-				`/ventas/ordenes-venta/?${params.toString()}`
-			);
-
+			// Como la función manual devuelve el array directo (sin .results)
 			const data = response.data;
-			console.log(data);
-
-			setOrdenes(data.results || []);
-			setTotalOrdenes(data.count || 0);
-			setTotalPaginas(
-				Math.ceil((data.count || 1) / (data.results?.length || 1))
-			);
-			setPaginaActual(pagina);
+			
+			setOrdenes(data || []);
+			setTotalOrdenes(data.length || 0);
+			setTotalPaginas(1); // La función manual por ahora no tiene paginación
+			setPaginaActual(1);
 		} catch (err) {
-			// Manejar error 404 si se busca un ID y no se encuentra
-			if (
-				err.response &&
-				err.response.status === 404 &&
-				filtroId.trim() !== ""
-			) {
-				setError(`No se encontró ninguna orden con el ID ${filtroId}.`);
-				setOrdenes([]);
-				setTotalOrdenes(0);
-				setTotalPaginas(1);
-			} else {
-				setError("Error al cargar las órdenes");
-				console.error("Error fetching orders:", err);
-			}
+			setError("Error al cargar las órdenes");
+			console.error(err);
 		} finally {
 			setLoading(false);
 		}
@@ -1342,16 +1307,14 @@ const Ventas = () => {
 													>
 														<div className={styles.productoInfo}>
 															<span className={styles.productoNombre}>
-																{producto.producto?.nombre ||
-																	producto.producto ||
-																	"Producto sin nombre"}
+																{producto.producto?.nombre || producto.nombre || (typeof producto.producto === 'string' ? producto.producto : "Producto")}
 															</span>
 														</div>
 														<div className={styles.productoCantidad}>
 															{producto.cantidad}{" "}
-															{producto.producto?.unidad?.descripcion ||
-																producto.unidad ||
-																"unidad"}
+															{producto.unidad || 
+															(producto.producto && typeof producto.producto === 'object' ? producto.producto.unidad?.descripcion : "") || 
+															"unidad"}
 														</div>
 													</div>
 												))}
