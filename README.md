@@ -4,8 +4,8 @@ This is a Full-Stack software solution designed to migrate a frozen food SME's p
 
 ## Tech Stack
 
-* **Backend:** Python (Scalable API Services)
-* **Database:** PostgreSQL (Relational Data Modeling & Query Optimization)
+* **Backend:** Python
+* **Database:** PostgreSQL
 * **Frontend:** React.js, JavaScript, HTML5, CSS3
 * **Deployment:** Vercel
 
