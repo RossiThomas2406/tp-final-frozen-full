@@ -99,11 +99,11 @@ WSGI_APPLICATION = 'wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'frozen_db', 
-        'USER': 'postgres',
-        'PASSWORD': 'password',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': 'postgres', 
+        'USER': 'postgres.yicntheizmtwzclckvhy',
+        'PASSWORD': 'FrozenDb2026456',
+        'HOST': 'aws-1-us-east-2.pooler.supabase.com',
+        'PORT': '6543',  # Cambiamos al puerto 6543 que es el del Pooler oficial de Supabase
     }
 }
 
