@@ -3,7 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL;
+// Reemplazamos la variable del env por la URL directa de Render con /api/
+const baseURL = 'https://frozen-backend-d5t3.onrender.com/api/';
 
 const api = axios.create({
   baseURL: baseURL,
