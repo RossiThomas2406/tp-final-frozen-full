@@ -135,40 +135,53 @@ const cancelarGuardado = () => {
 	}, []);
 
 	const obtenerDatosIniciales = async () => {
-		try {
-			setCargando(true);
-			setError(null);
+			try {
+				setCargando(true);
+				setError(null);
 
-			// Obtener todos los datos necesarios en paralelo
-			const [lineasResponse, productosResponse, productosLineaResponse] =
-				await Promise.all([
-					api.get("/reportes/produccion/lineas-produccion/"),
-					api.get("/productos/listar/#"),
-					api.get("/recetas/productos-linea/"),
-				]);
+				// 1. Cambiamos la URL a la ruta real de producción usada en el Service
+				// 2. Quitamos el '#' sobrante de la URL de productos por seguridad
+				const [lineasResponse, productosResponse, productosLineaResponse] =
+					await Promise.all([
+						api.get("/produccion/lineas/"), 
+						api.get("/productos/listar/"),
+						api.get("/recetas/productos-linea/"),
+					]);
 
-			const lineasData = lineasResponse.data || [];
-			const productosData = productosResponse.data?.results || [];
-			const productosLineaData = productosLineaResponse.data?.results || [];
+				// Desestructurar contemplando si Django rest_framework usa u omite '.results'
+				const rawLineasData = lineasResponse.data?.results || lineasResponse.data || [];
+				const productosData = productosResponse.data?.results || productosResponse.data || [];
+				const productosLineaData = productosLineaResponse.data?.results || productosLineaResponse.data || [];
 
-			console.log("=== DATOS CARGADOS ===");
-			console.log("Líneas:", lineasData);
-			console.log("Productos:", productosData);
-			console.log("Productos por Línea:", productosLineaData);
+				// === ADAPTADOR DE PROPIEDADES ===
+				// Mapeamos lo que devuelve el backend con lo que espera tu componente en el render
+				const lineasData = (Array.isArray(rawLineasData) ? rawLineasData : [rawLineasData]).map(linea => ({
+					id_linea: linea.id_linea_produccion || linea.id,
+					nombre_linea: linea.descripcion || "Línea sin nombre",
+					// Si 'linea.estado' es un objeto o string, lo normalizamos
+					estado_actual: typeof linea.id_estado_linea_produccion === 'object' 
+						? linea.id_estado_linea_produccion?.descripcion 
+						: (linea.estado || "disponible") 
+				}));
 
-			setLineas(lineasData);
-			setProductos(productosData);
-			setProductosLinea(productosLineaData);
-		} catch (err) {
-			const errorMessage =
-				err.response?.data?.message || "Error al cargar los datos";
-			setError(errorMessage);
-			console.error("Error fetching datos iniciales:", err);
-			toast.error("Error al cargar los datos.");
-		} finally {
-			setCargando(false);
-		}
-	};
+				console.log("=== DATOS ADAPTADOS Y CARGADOS ===");
+				console.log("Líneas procesadas:", lineasData);
+				console.log("Productos:", productosData);
+				console.log("Productos por Línea:", productosLineaData);
+
+				setLineas(lineasData);
+				setProductos(productosData);
+				setProductosLinea(productosLineaData);
+			} catch (err) {
+				console.error("Error fetching datos iniciales:", err);
+				const errorMessage =
+					err.response?.data?.message || "Error al cargar los datos";
+				setError(errorMessage);
+				toast.error("Error al cargar los datos.");
+			} finally {
+				setCargando(false);
+			}
+		};
 
 	// Función para abrir el modal y mostrar productos fabricables
 	const abrirModalProductos = (linea) => {

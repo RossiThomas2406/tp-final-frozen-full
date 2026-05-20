@@ -34,74 +34,61 @@ class LineaProduccionService {
   }
 
   static async obtenerLineas() {
-    try {
-      console.log('Obteniendo líneas de producción...');
-      const response = await api.get('/produccion/lineas/');
-      console.log('Respuesta de /produccion/lineas/:', response.data);
-      
-      const lineasData = response.data.results || response.data;
-      const lineasArray = Array.isArray(lineasData) ? lineasData : [lineasData];
-      
-      // Obtener todos los IDs de estado únicos
-      const idsEstados = [...new Set(
-        lineasArray
-          .map(linea => {
-            const estadoId = linea.id_estado_linea_produccion?.id_estado_linea_produccion || 
-                           linea.id_estado_linea_produccion;
-            console.log(`Línea ${linea.id_linea_produccion || linea.id} - ID Estado:`, estadoId);
-            return estadoId;
-          })
-          .filter(Boolean)
-      )];
-      
-      console.log('IDs de estado únicos encontrados:', idsEstados);
-      
-      // Obtener las descripciones de los estados en paralelo
-      const estadosPromises = idsEstados.map(async (id) => ({
-        id,
-        descripcion: await this.obtenerDescripcionEstado(id)
-      }));
-      
-      const estados = await Promise.all(estadosPromises);
-      console.log('Estados obtenidos:', estados);
-      
-      const estadosMap = new Map(estados.map(e => [e.id, e.descripcion]));
-      
-      // Mapear las líneas con sus estados correspondientes
-      const lineasConEstado = lineasArray.map(linea => {
-        const estadoId = linea.id_estado_linea_produccion?.id_estado_linea_produccion || 
-                        linea.id_estado_linea_produccion;
-        const estadoDesc = estadosMap.get(estadoId) || 'Sin estado';
+      try {
+        console.log('Obteniendo líneas de producción...');
+        const response = await api.get('/produccion/lineas/');
+        console.log('Respuesta de /produccion/lineas/:', response.data);
         
-        console.log('Procesando línea:', { 
-          id: linea.id_linea_produccion || linea.id, 
-          estadoId, 
-          estadoDesc 
+        // BLINDAJE: Si por algún motivo el backend responde con HTML, lanzamos error controlado
+        if (typeof response.data === 'string' && response.data.includes('<!doctype html>')) {
+          throw new Error("El servidor respondió con HTML en lugar de JSON. Verifica la URL o autenticación.");
+        }
+
+        const lineasData = response.data.results || response.data;
+        const lineasArray = Array.isArray(lineasData) ? lineasData : [lineasData];
+        
+        // Obtener todos los IDs de estado únicos
+        const idsEstados = [...new Set(
+          lineasArray
+            .map(linea => {
+              const estadoId = linea.id_estado_linea_produccion?.id_estado_linea_produccion || 
+                            linea.id_estado_linea_produccion;
+              return estadoId;
+            })
+            .filter(Boolean)
+        )];
+        
+        // Obtener las descripciones de los estados en paralelo
+        const estadosPromises = idsEstados.map(async (id) => ({
+          id,
+          descripcion: await this.obtenerDescripcionEstado(id)
+        }));
+        
+        const estados = await Promise.all(estadosPromises);
+        const estadosMap = new Map(estados.map(e => [e.id, e.descripcion]));
+        
+        // Mapear las líneas con sus estados correspondientes
+        const lineasConEstado = lineasArray.map(linea => {
+          const estadoId = linea.id_estado_linea_produccion?.id_estado_linea_produccion || 
+                          linea.id_estado_linea_produccion;
+          const estadoDesc = estadosMap.get(estadoId) || 'Sin estado';
+          
+          return {
+            id: linea.id_linea_produccion || linea.id,
+            descripcion: linea.descripcion,
+            capacidad_por_hora: linea.capacidad_por_hora,
+            id_estado_linea_produccion: estadoId,
+            estado: estadoDesc,
+            productos: linea.productos || []
+          };
         });
         
-        console.log('Datos de línea:', { 
-          ...linea,
-          estadoId,
-          estadoDesc 
-        });
-        
-        return {
-          id: linea.id_linea_produccion || linea.id,
-          descripcion: linea.descripcion,
-          capacidad_por_hora: linea.capacidad_por_hora,
-          id_estado_linea_produccion: estadoId,
-          estado: estadoDesc,
-          productos: linea.productos || []
-        };
-      });
-      
-      console.log('Líneas con estado procesadas:', lineasConEstado);
-      return lineasConEstado;
-    } catch (error) {
-      console.error('Error al obtener líneas de producción:', error);
-      throw error;
+        return lineasConEstado;
+      } catch (error) {
+        console.error('Error al obtener líneas de producción:', error);
+        throw error;
+      }
     }
-  }
 
   // Obtener una línea de producción por ID
   static async obtenerLineaPorId(id) {
