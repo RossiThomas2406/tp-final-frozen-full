@@ -643,11 +643,11 @@ const VerOrdenesProduccion = () => {
             className={styles.select}
           >
             <option value="todos">Todos los estados</option>
-            {estadosUnicos.map((estado) => (
-              <option key={estado.id} value={estado.id}>
-                {estado.orden} - {estado.nombre}
-              </option>
-            ))}
+              {estadosUnicos.map((estado) => (
+                <option key={estado.id} value={estado.id}>
+                  {estado.orden} - {estado.nombre}
+                </option>
+              ))}
           </select>
         </div>
 
