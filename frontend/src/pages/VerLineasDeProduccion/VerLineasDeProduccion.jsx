@@ -139,27 +139,29 @@ const obtenerDatosIniciales = async () => {
             setCargando(true);
             setError(null);
 
-            // 1. Apuntamos a las rutas reales registradas en tu DefaultRouter del backend
+            // 🛡️ CORREGIDO: Quitamos las barras diagonales iniciales obligatorias para que no se coman el prefijo /api de Axios
+            // 🛡️ Ajustamos el endpoint de productos al ViewSet oficial e indexable
             const [lineasResponse, productosResponse, productosLineaResponse] =
                 await Promise.all([
-                    api.get("/produccion/lineas/").catch(() => ({ data: [] })), 
-                    api.get("/productos/listar/").catch(() => ({ data: [] })),
-                    api.get("/produccion/ordenes-trabajo/").catch(() => ({ data: [] })), // Fallback seguro a OTs si recetas no existe
+                    api.get("produccion/lineas/"), 
+                    api.get("productos/productos/"),
+                    api.get("recetas/productos-linea/"),
                 ]);
 
-            // 2. Extraer datos con blindaje estricto anti-HTML string
-            const checkData = (res) => {
+            // Función auxiliar para extraer datos con seguridad por si DRF usa u omite '.results'
+            const procesarRespuesta = (res) => {
                 if (!res || !res.data) return [];
+                // Si por algún motivo se cola un HTML, retornamos un array vacío controlado
                 if (typeof res.data === 'string' && res.data.includes('<!doctype html>')) return [];
                 return res.data?.results || res.data || [];
             };
 
-            const rawLineasData = checkData(lineasResponse);
-            const productosData = checkData(productosResponse);
-            const productosLineaData = checkData(productosLineaResponse);
+            const rawLineasData = lineasResponse.data?.results || lineasResponse.data || [];
+            const productosData = procesarRespuesta(productosResponse);
+            const productosLineaData = procesarRespuesta(productosLineaResponse);
 
-            // 3. ADAPTADOR: Mapeamos los campos crudos del backend a los que espera tu render en el frente
-            const lineasData = rawLineasData.map(linea => ({
+            // ADAPTADOR: Mapeamos los campos del backend con el render original de React
+            const lineasData = (Array.isArray(rawLineasData) ? rawLineasData : [rawLineasData]).map(linea => ({
                 id_linea: linea.id_linea_produccion || linea.id,
                 nombre_linea: linea.descripcion || "Línea de Producción",
                 estado_actual: typeof linea.id_estado_linea_produccion === 'object'
@@ -167,8 +169,8 @@ const obtenerDatosIniciales = async () => {
                     : (linea.estado || "Disponible")
             }));
 
-            console.log("=== DATOS ADAPTADOS SANEADOS ===");
-            console.log("Líneas:", lineasData);
+            console.log("=== DATOS ADAPTADOS Y SANEADOS ===");
+            console.log("Líneas procesadas:", lineasData);
             console.log("Productos:", productosData);
             console.log("Productos por Línea:", productosLineaData);
 
@@ -178,7 +180,7 @@ const obtenerDatosIniciales = async () => {
         } catch (err) {
             console.error("Error fetching datos iniciales:", err);
             setError("Error al conectar con el panel de infraestructura.");
-            toast.error("Error al sincronizar las líneas de montaje.");
+            toast.error("Error al cargar los datos de producción.");
         } finally {
             setCargando(false);
         }
