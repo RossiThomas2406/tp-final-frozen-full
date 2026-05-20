@@ -643,11 +643,15 @@ const VerOrdenesProduccion = () => {
             className={styles.select}
           >
             <option value="todos">Todos los estados</option>
-              {estadosUnicos.map((estado) => (
-                <option key={estado.id} value={estado.id}>
-                  {estado.orden} - {estado.nombre}
-                </option>
-              ))}
+              {(estadosUnicos || []).map((estado) => {
+                const id = estado.id_estado_orden_produccion || estado.id;
+                const nombre = estado.descripcion || estado.nombre || "Estado";
+                return (
+                  <option key={id} value={id}>
+                    {nombre}
+                  </option>
+                );
+              })}
           </select>
         </div>
 
@@ -662,11 +666,15 @@ const VerOrdenesProduccion = () => {
             className={styles.select}
           >
             <option value="todos">Todos los operarios</option>
-            {operariosUnicos.map((operario) => (
-              <option key={operario.id} value={operario.id}>
-                {operario.nombre}
-              </option>
-            ))}
+              {(operariosUnicos || []).map((operario) => {
+                const id = operario.id_empleado || operario.id;
+                const nombreCompleto = operario.nombre ? `${operario.nombre} ${operario.apellido || ''}` : "Operario";
+                return (
+                  <option key={id} value={id}>
+                    {nombreCompleto}
+                  </option>
+                );
+              })}
           </select>
         </div>
 
