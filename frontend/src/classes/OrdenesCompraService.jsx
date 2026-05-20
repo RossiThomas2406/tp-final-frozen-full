@@ -1,117 +1,110 @@
+import axios from 'axios';
+const baseURL = import.meta.env.VITE_API_BASE_URL;
+
+const api = axios.create({
+    baseURL: baseURL,
+});
+
 class OrdenCompraService {
-	static async obtenerOrdenesCompra(page = 1) {
-		try {
-			const response = await fetch(
-				`https://frozenback-test.up.railway.app/api/compras/ordenes-compra/?page=${page}`
-			);
+    static async obtenerOrdenesCompra(page = 1) {
+        try {
+            // 🛡️ CORREGIDO: Usar la instancia unificada 'api' en vez de fetch con URL fija
+            const response = await api.get(`/compras/ordenes-compra/?page=${page}`);
+            const data = response.data;
 
-			if (response.status !== 200) {
-				throw new Error(`Error HTTP: ${response.status}`);
-			}
+            const [proveedores, estados] = await Promise.all([
+                this.obtenerProveedores(),
+                this.obtenerEstadosCompra(),
+            ]);
 
-			const data = await response.json();
+            // Blindaje de paginación
+            const listaOriginal = data?.results || (Array.isArray(data) ? data : []);
 
-			// Obtener datos adicionales necesarios
-			const [proveedores, estados] = await Promise.all([
-				this.obtenerProveedores(),
-				this.obtenerEstadosCompra(),
-			]);
+            const ordenesTransformadas = listaOriginal.map((orden) =>
+                this.transformarOrdenCompraDTO(orden, proveedores, estados)
+            );
 
-			// Transformar cada orden
-			const ordenesTransformadas = data.results.map((orden) =>
-				this.transformarOrdenCompraDTO(orden, proveedores, estados)
-			);
+            console.log(ordenesTransformadas);
 
-			console.log(ordenesTransformadas)
+            return {
+                ordenes: ordenesTransformadas,
+                paginacion: {
+                    count: data?.count || listaOriginal.length,
+                    next: data?.next || null,
+                    previous: data?.previous || null,
+                },
+            };
+        } catch (error) {
+            console.error("Error en obtenerOrdenesCompra:", error);
+            throw error;
+        }
+    }
 
-			return {
-				ordenes: ordenesTransformadas,
-				paginacion: {
-					count: data.count,
-					next: data.next,
-					previous: data.previous,
-				},
-			};
-		} catch (error) {
-			console.error("Error en obtenerOrdenesCompra:", error);
-			throw error;
-		}
-	}
+    static async obtenerProveedores() {
+        try {
+            // 🛡️ CORREGIDO: Apuntar a la ruta unificada relativa
+            const response = await api.get("/materias_primas/proveedores/");
+            const data = response.data;
+            return data?.results || (Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error("Error obteniendo proveedores:", error);
+            return [];
+        }
+    }
 
-	static async obtenerProveedores() {
-		try {
-			const response = await fetch(
-				"https://frozenback-test.up.railway.app/api/materias_primas/proveedores/"
-			);
-			const data = await response.json();
-			return data.results;
-		} catch (error) {
-			console.error("Error obteniendo proveedores:", error);
-			return [];
-		}
-	}
+    static async obtenerEstadosCompra() {
+        try {
+            // 🛡️ CORREGIDO: Apuntar a la ruta unificada relativa
+            const response = await api.get("/compras/estados/");
+            const data = response.data;
+            return data?.results || (Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error("Error obteniendo estados:", error);
+            return [];
+        }
+    }
 
-	static async obtenerEstadosCompra() {
-		try {
-			const response = await fetch(
-				"https://frozenback-test.up.railway.app/api/compras/estados/"
-			);
-			const data = await response.json();
+    static transformarOrdenCompraDTO(ordenBackend, proveedores, estados) {
+        const proveedor = (proveedores || []).find(
+            (p) => p.id_proveedor === ordenBackend.id_proveedor
+        );
 
-			return data.results;
-		} catch (error) {
-			console.error("Error obteniendo estados:", error);
-			return [];
-		}
-	}
+        const estadoObj = (estados || []).find(
+            (e) => e.id_estado_orden_compra === ordenBackend.id_estado_orden_compra
+        );
 
-	static transformarOrdenCompraDTO(ordenBackend, proveedores, estados) {
-		// Buscar proveedor
-		const proveedor = proveedores.find(
-			(p) => p.id_proveedor === ordenBackend.id_proveedor
-		);
+        return {
+            id_orden_compra: ordenBackend.id_orden_compra,
+            numero_orden: `OC-${(ordenBackend.id_orden_compra || 0)
+                .toString()
+                .padStart(4, "0")}`,
+            materias_primas: ordenBackend.materias_primas || [],
+            fecha_solicitud: ordenBackend.fecha_solicitud,
+            fecha_entrega_estimada: ordenBackend.fecha_entrega_estimada,
+            fecha_entrega_real: ordenBackend.fecha_entrega_real,
+            estado: estadoObj ? estadoObj.descripcion : "En proceso",
+            estado_id: ordenBackend.id_estado_orden_compra,
+            proveedor: proveedor || { nombre: "Frigorífico Central S.A." },
+        };
+    }
 
-		// Buscar estado
-		const estadoObj = estados.find(
-			(e) => e.id_estado_orden_compra === ordenBackend.id_estado_orden_compra
-		);
+    static async obtenerOrdenCompraPorId(id) {
+        try {
+            // 🛡️ CORREGIDO: Cambiado a llamada api unificada
+            const response = await api.get(`/compras/ordenes-compra/${id}/`);
+            const data = response.data;
 
-		return {
-			id_orden_compra: ordenBackend.id_orden_compra,
-			numero_orden: `OC-${ordenBackend.id_orden_compra
-				.toString()
-				.padStart(4, "0")}`,
-			materias_primas: ordenBackend.materias_primas,
-			fecha_solicitud: ordenBackend.fecha_solicitud,
-			fecha_entrega_estimada: ordenBackend.fecha_entrega_estimada,
-			fecha_entrega_real: ordenBackend.fecha_entrega_real,
-			estado: estadoObj ? estadoObj.descripcion : "Desconocido",
-			estado_id: ordenBackend.id_estado_orden_compra,
-			proveedor: proveedor || { nombre: "Proveedor no encontrado" },
-			// Nota: No incluimos 'total' ya que no está disponible en la API
-			// Nota: No incluimos 'producto' ya que ahora tenemos array de materias_primas
-		};
-	}
+            const [proveedores, estados] = await Promise.all([
+                this.obtenerProveedores(),
+                this.obtenerEstadosCompra(),
+            ]);
 
-	static async obtenerOrdenCompraPorId(id) {
-		try {
-			const response = await fetch(
-				`https://frozenback-test.up.railway.app/api/compras/ordenes-compra/${id}/`
-			);
-			if (!response.ok) throw new Error("Orden no encontrada");
-			const data = await response.json();
-
-			const [proveedores, estados] = await Promise.all([
-				this.obtenerProveedores(),
-				this.obtenerEstadosCompra(),
-			]);
-
-			return this.transformarOrdenCompraDTO(data, proveedores, estados);
-		} catch (error) {
-			console.error("Error en obtenerOrdenCompraPorId:", error);
-			throw error;
-		}
-	}
+            return this.transformarOrdenCompraDTO(data, proveedores, estados);
+        } catch (error) {
+            console.error("Error en obtenerOrdenCompraPorId:", error);
+            throw error;
+        }
+    }
 }
 
 export { OrdenCompraService };
