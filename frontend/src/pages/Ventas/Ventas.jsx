@@ -299,26 +299,31 @@ const Ventas = () => {
 		}
 	};
 
-	// Función para obtener estados disponibles
-	const fetchEstados = async () => {
-		try {
-			const response = await api.get("/ventas/estados-venta/");
-			setEstadosDisponibles(response.data.results || []);
-		} catch (err) {
-			console.error("Error fetching estados:", err);
-		}
-	};
 
-	// Función para obtener clientes disponibles
-	const fetchClientes = async () => {
-		try {
-			const response = await api.get("/ventas/clientes/");
-			console.log("Clientes obtenidos:", response.data);
-			setClientesDisponibles(response.data.results || []);
-		} catch (err) {
-			console.error("Error fetching clientes:", err);
-		}
-	};
+	// Función para obtener estados disponibles blindada
+    const fetchEstados = async () => {
+        try {
+            const response = await api.get("/ventas/estados-venta/");
+            const estData = response.data?.results || response.data || [];
+            setEstadosDisponibles(Array.isArray(estData) ? estData : []);
+        } catch (err) {
+            console.error("Error fetching estados:", err);
+            setEstadosDisponibles([]); // Fallback seguro
+        }
+    };
+
+    // Función para obtener clientes disponibles blindada
+    const fetchClientes = async () => {
+        try {
+            const response = await api.get("/ventas/clientes/");
+            console.log("Clientes obtenidos:", response.data);
+            const cliData = response.data?.results || response.data || [];
+            setClientesDisponibles(Array.isArray(cliData) ? cliData : []);
+        } catch (err) {
+            console.error("Error fetching clientes:", err);
+            setClientesDisponibles([]); // Fallback seguro
+        }
+    };
 
 	const pasosTutorial = [
 		{
@@ -406,32 +411,30 @@ const Ventas = () => {
 
 	// Cargar datos iniciales - ELIMINADO el useEffect que inicia el tutorial automáticamente
 	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				setLoading(true);
+			const fetchData = async () => {
+				try {
+					setLoading(true);
 
-				const [productosResponse] = await Promise.all([
-					api.get("/productos/productos/"),
-				]);
+					const [productosResponse] = await Promise.all([
+						api.get("/productos/productos/"),
+					]);
 
-				const listaProductos = productosResponse.data?.results || productosResponse.data || [];
-				setProductosDisponibles(Array.isArray(listaProductos) ? listaProductos : []);
+					// Blindaje de Productos: acepta con o sin .results
+					const prodData = productosResponse.data?.results || productosResponse.data || [];
+					setProductosDisponibles(Array.isArray(prodData) ? prodData : []);
 
-				// Cargar estados y clientes
-				await Promise.all([fetchEstados(), fetchClientes()]);
+					// Cargar estados y clientes
+					await Promise.all([fetchEstados(), fetchClientes()]);
+				} catch (err) {
+					setError("Error al cargar los datos");
+					console.error("Error fetching data:", err);
+				} finally {
+					setLoading(false);
+				}
+			};
 
-				// Cargar la primera página de órdenes
-				await fetchOrdenes(1);
-			} catch (err) {
-				setError("Error al cargar los datos");
-				console.error("Error fetching data:", err);
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		fetchData();
-	}, []);
+			fetchData();
+		}, []);
 
 	// Efecto para recargar órdenes cuando cambian los filtros - CORREGIDO
 	useEffect(() => {
