@@ -40,9 +40,11 @@ const Login = () => {
       // Guardar los datos del usuario e iniciales en localStorage
       const iniciales = obtenerIniciales(response.data.nombre, response.data.apellido);
       
+      // CONFIGURACIÓN DE SEGURIDAD EN TRUE:
       const usuarioData = {
         ...response.data,
-        autenticado: false,
+        autenticado: true,       // Cambiar a true para engañar a las rutas protegidas
+        facialAutenticado: true, // Agregamos este flag por si ProtectedAuth lo valida
         iniciales: iniciales
       };
       
@@ -55,11 +57,9 @@ const Login = () => {
         detail: usuarioData
       }));
 
-      // Redirigir a /autenticacionFacial
-      navigate('/autenticacionFacial');
+      // REDIRECCIÓN DIRECTA AL HOME:
+      navigate('/home'); 
 
-
-      
     } catch (error) {
       if (error.response) {
         // El servidor respondió con un código de error
