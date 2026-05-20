@@ -28,19 +28,20 @@ try:
     clave_encriptada = make_password("Frozen2026")
 
     # Creamos o actualizamos a 'tommy' solo con lo que pide el Login de views.py
+    # Buscamos o creamos al usuario 'tommy' guardando la clave en texto plano directo
     empleado, creado = Empleado.objects.get_or_create(
         usuario="tommy",
         defaults={
             "nombre": "Thomas",
             "apellido": "Rossi",
-            "contrasena": clave_encriptada,
+            "contrasena": "Frozen2026",  # <--- Texto plano puro
             "id_rol": rol,
             "id_face": face,
         },
     )
 
     if not creado:
-        empleado.contrasena = clave_encriptada
+        empleado.contrasena = "Frozen2026"  # <--- Texto plano puro
         empleado.id_rol = rol
         empleado.id_face = face
         empleado.save()

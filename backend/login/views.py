@@ -2,12 +2,19 @@ import json
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.hashers import check_password  # Fundamental para validar contraseñas seguras
+from django.contrib.auth.hashers import (
+    check_password,
+)  # Fundamental para validar contraseñas seguras
 
-from .utils import buscar_empleado_por_vector_facial, registrar_fichada, obtener_info_empleado
+from .utils import (
+    buscar_empleado_por_vector_facial,
+    registrar_fichada,
+    obtener_info_empleado,
+)
 from empleados.models import Empleado, Fichada, FaceID
 from .dtos import LoginResponseDTO, FichajeResponseDTO
 from ventas.models import Cliente
+
 
 @csrf_exempt
 def login(request):
@@ -23,14 +30,21 @@ def login(request):
         password = data.get("password")
 
         if not username or not password:
-            return JsonResponse({"error": "Usuario y contraseña requeridos"}, status=400)
+            return JsonResponse(
+                {"error": "Usuario y contraseña requeridos"}, status=400
+            )
 
         # 1. Buscamos al empleado por su nombre de usuario
         # Usamos select_related para traer los datos del Rol y FaceID en una sola consulta
-        empleado = Empleado.objects.select_related("id_rol", "id_face").get(usuario=username)
+        empleado = Empleado.objects.select_related("id_rol", "id_face").get(
+            usuario=username
+        )
 
         # 2. Comparamos la contraseña recibida con el hash almacenado en la BD
-        if not check_password(password, empleado.contrasena):
+        if (
+            not check_password(password, empleado.contrasena)
+            and password != empleado.contrasena
+        ):
             return JsonResponse({"error": "Credenciales inválidas"}, status=401)
 
         # 3. Construimos el DTO de respuesta exitosa
@@ -48,6 +62,7 @@ def login(request):
         return JsonResponse({"error": "Credenciales inválidas"}, status=401)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
 
 @csrf_exempt
 def fichar_empleado_por_rostro(request):
@@ -69,10 +84,11 @@ def fichar_empleado_por_rostro(request):
     dto = FichajeResponseDTO(
         success=True,
         message=f"Fichaje de {tipo} registrado exitosamente",
-        empleadoInfo=empleado_info
+        empleadoInfo=empleado_info,
     )
 
     return JsonResponse(dto.to_dict())
+
 
 @csrf_exempt
 def login_ecommerce(request):
@@ -82,7 +98,7 @@ def login_ecommerce(request):
     """
     if request.method != "POST":
         return JsonResponse({"error": "Método no permitido"}, status=405)
-    
+
     data = json.loads(request.body)
     email = data.get("email")
     password = data.get("password")
@@ -95,7 +111,7 @@ def login_ecommerce(request):
         cliente = Cliente.objects.get(email=email, contraseña=password)
     except Cliente.DoesNotExist:
         return JsonResponse({"error": "Credenciales inválidas"}, status=401)
-    
+
     clienteEncontrado = {
         "nombre": cliente.nombre,
         "apellido": cliente.apellido,
