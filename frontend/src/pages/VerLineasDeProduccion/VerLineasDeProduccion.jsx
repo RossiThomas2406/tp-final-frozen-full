@@ -366,8 +366,8 @@ const guardarCambios = async () => {
 			{/* Cards Grid */}
 			<div className={styles.cardsGrid}>
 				{lineas.length > 0 ? (
-					lineas.map((linea) => (
-						<div key={linea.id_linea} className={styles.card}>
+					lineas.map((linea, idx) => (
+						<div key={linea.id_linea || linea.id_linea_produccion || idx} className={styles.card}>
 							<div className={styles.cardHeader}>
 								<h3 className={styles.lineaName}>{linea.nombre_linea}</h3>
 								<span className={styles.estadoIcon}>
