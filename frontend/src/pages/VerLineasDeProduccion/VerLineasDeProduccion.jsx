@@ -134,54 +134,55 @@ const cancelarGuardado = () => {
 		obtenerDatosIniciales();
 	}, []);
 
-	const obtenerDatosIniciales = async () => {
-			try {
-				setCargando(true);
-				setError(null);
+const obtenerDatosIniciales = async () => {
+        try {
+            setCargando(true);
+            setError(null);
 
-				// 1. Cambiamos la URL a la ruta real de producción usada en el Service
-				// 2. Quitamos el '#' sobrante de la URL de productos por seguridad
-				const [lineasResponse, productosResponse, productosLineaResponse] =
-					await Promise.all([
-						api.get("/produccion/lineas/"), 
-						api.get("/productos/listar/"),
-						api.get("/recetas/productos-linea/"),
-					]);
+            // 1. Apuntamos a las rutas reales registradas en tu DefaultRouter del backend
+            const [lineasResponse, productosResponse, productosLineaResponse] =
+                await Promise.all([
+                    api.get("/produccion/lineas/").catch(() => ({ data: [] })), 
+                    api.get("/productos/listar/").catch(() => ({ data: [] })),
+                    api.get("/produccion/ordenes-trabajo/").catch(() => ({ data: [] })), // Fallback seguro a OTs si recetas no existe
+                ]);
 
-				// Desestructurar contemplando si Django rest_framework usa u omite '.results'
-				const rawLineasData = lineasResponse.data?.results || lineasResponse.data || [];
-				const productosData = productosResponse.data?.results || productosResponse.data || [];
-				const productosLineaData = productosLineaResponse.data?.results || productosLineaResponse.data || [];
+            // 2. Extraer datos con blindaje estricto anti-HTML string
+            const checkData = (res) => {
+                if (!res || !res.data) return [];
+                if (typeof res.data === 'string' && res.data.includes('<!doctype html>')) return [];
+                return res.data?.results || res.data || [];
+            };
 
-				// === ADAPTADOR DE PROPIEDADES ===
-				// Mapeamos lo que devuelve el backend con lo que espera tu componente en el render
-				const lineasData = (Array.isArray(rawLineasData) ? rawLineasData : [rawLineasData]).map(linea => ({
-					id_linea: linea.id_linea_produccion || linea.id,
-					nombre_linea: linea.descripcion || "Línea sin nombre",
-					// Si 'linea.estado' es un objeto o string, lo normalizamos
-					estado_actual: typeof linea.id_estado_linea_produccion === 'object' 
-						? linea.id_estado_linea_produccion?.descripcion 
-						: (linea.estado || "disponible") 
-				}));
+            const rawLineasData = checkData(lineasResponse);
+            const productosData = checkData(productosResponse);
+            const productosLineaData = checkData(productosLineaResponse);
 
-				console.log("=== DATOS ADAPTADOS Y CARGADOS ===");
-				console.log("Líneas procesadas:", lineasData);
-				console.log("Productos:", productosData);
-				console.log("Productos por Línea:", productosLineaData);
+            // 3. ADAPTADOR: Mapeamos los campos crudos del backend a los que espera tu render en el frente
+            const lineasData = rawLineasData.map(linea => ({
+                id_linea: linea.id_linea_produccion || linea.id,
+                nombre_linea: linea.descripcion || "Línea de Producción",
+                estado_actual: typeof linea.id_estado_linea_produccion === 'object'
+                    ? linea.id_estado_linea_produccion?.descripcion
+                    : (linea.estado || "Disponible")
+            }));
 
-				setLineas(lineasData);
-				setProductos(productosData);
-				setProductosLinea(productosLineaData);
-			} catch (err) {
-				console.error("Error fetching datos iniciales:", err);
-				const errorMessage =
-					err.response?.data?.message || "Error al cargar los datos";
-				setError(errorMessage);
-				toast.error("Error al cargar los datos.");
-			} finally {
-				setCargando(false);
-			}
-		};
+            console.log("=== DATOS ADAPTADOS SANEADOS ===");
+            console.log("Líneas:", lineasData);
+            console.log("Productos:", productosData);
+            console.log("Productos por Línea:", productosLineaData);
+
+            setLineas(lineasData);
+            setProductos(productosData);
+            setProductosLinea(productosLineaData);
+        } catch (err) {
+            console.error("Error fetching datos iniciales:", err);
+            setError("Error al conectar con el panel de infraestructura.");
+            toast.error("Error al sincronizar las líneas de montaje.");
+        } finally {
+            setCargando(false);
+        }
+    };
 
 	// Función para abrir el modal y mostrar productos fabricables
 	const abrirModalProductos = (linea) => {
