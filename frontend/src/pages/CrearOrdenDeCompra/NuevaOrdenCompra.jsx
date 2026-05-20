@@ -5,6 +5,9 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import styles from './NuevaOrdenCompra.module.css';
 
+// URL del backend real de Render unificado
+const BACKEND_URL = 'https://frozen-backend-d5t3.onrender.com';
+
 const NuevaOrdenCompra = () => {
   const [materiasPrimas, setMateriasPrimas] = useState([]);
   const [proveedores, setProveedores] = useState([]);
@@ -24,35 +27,29 @@ const NuevaOrdenCompra = () => {
   const [cantidadMinimaPedido, setCantidadMinimaPedido] = useState(0);
   const [cantidadAjustada, setCantidadAjustada] = useState(0);
 
-  // Referencia para el timeout del debounce
   const debounceTimeoutRef = useRef(null);
 
-  // Función para obtener todas las materias primas con paginación
+  // Obtener materias primas con blindaje de paginación
   const obtenerTodasLasMateriasPrimas = async () => {
     let todasLasMaterias = [];
-    let url = 'https://frozenback-test.up.railway.app/api/materias_primas/materias/';
+    let url = `${BACKEND_URL}/api/materias_primas/materias/`;
     
     try {
       while (url) {
         const response = await axios.get(url);
         const data = response.data;
         
-        // Dependiendo de la estructura de la respuesta
-        if (data.results) {
-          // Si usa paginación estándar (results + next)
+        if (data && data.results) {
           todasLasMaterias = [...todasLasMaterias, ...data.results];
-          url = data.next; // URL de la siguiente página o null
+          url = data.next ? data.next.replace('https://frozenback-test.up.railway.app', BACKEND_URL) : null;
         } else if (Array.isArray(data)) {
-          // Si devuelve un array directamente (sin paginación)
           todasLasMaterias = data;
           url = null;
         } else {
-          // Otra estructura
           console.error('Estructura de respuesta inesperada:', data);
           break;
         }
       }
-      
       return todasLasMaterias;
     } catch (err) {
       console.error('Error obteniendo materias primas:', err);
@@ -60,19 +57,19 @@ const NuevaOrdenCompra = () => {
     }
   };
 
-  // Función para obtener todos los proveedores con paginación
+  // Obtener proveedores con blindaje de paginación
   const obtenerTodosLosProveedores = async () => {
     let todosLosProveedores = [];
-    let url = 'https://frozenback-test.up.railway.app/api/materias_primas/proveedores/';
+    let url = `${BACKEND_URL}/api/materias_primas/proveedores/`;
     
     try {
       while (url) {
         const response = await axios.get(url);
         const data = response.data;
         
-        if (data.results) {
+        if (data && data.results) {
           todosLosProveedores = [...todosLosProveedores, ...data.results];
-          url = data.next;
+          url = data.next ? data.next.replace('https://frozenback-test.up.railway.app', BACKEND_URL) : null;
         } else if (Array.isArray(data)) {
           todosLosProveedores = data;
           url = null;
@@ -81,7 +78,6 @@ const NuevaOrdenCompra = () => {
           break;
         }
       }
-      
       return todosLosProveedores;
     } catch (err) {
       console.error('Error obteniendo proveedores:', err);
@@ -89,51 +85,22 @@ const NuevaOrdenCompra = () => {
     }
   };
 
-  // Función para obtener la descripción de una unidad por ID
-  const obtenerUnidadMedida = async (idUnidad) => {
-    if (!idUnidad) return '';
-    
-    if (unidadesMedida[idUnidad]) {
-      return unidadesMedida[idUnidad];
-    }
-
-    try {
-      const response = await axios.get(`https://frozenback-test.up.railway.app/api/productos/unidades/${idUnidad}/`);
-      const unidad = response.data.descripcion;
-      
-      setUnidadesMedida(prev => ({
-        ...prev,
-        [idUnidad]: unidad
-      }));
-      
-      return unidad;
-    } catch (err) {
-      console.error(`Error obteniendo unidad ${idUnidad}:`, err);
-      return `Unidad ${idUnidad}`;
-    }
-  };
-
-  // Función para cargar todas las unidades de medida usadas por las materias primas
+  // Cargar unidades de medida de forma controlada
   const cargarUnidadesMedida = async (materias) => {
     const unidadesUnicas = [...new Set(materias.map(m => m.id_unidad).filter(id => id))];
+    const unidadesMap = {};
+
     const unidadesPromises = unidadesUnicas.map(async (idUnidad) => {
       try {
-        const response = await axios.get(`https://frozenback-test.up.railway.app/api/productos/unidades/${idUnidad}/`);
-        return {
-          id: idUnidad,
-          descripcion: response.data.descripcion
-        };
+        const response = await axios.get(`${BACKEND_URL}/api/productos/unidades/${idUnidad}/`);
+        return { id: idUnidad, descripcion: response.data.descripcion };
       } catch (err) {
         console.error(`Error obteniendo unidad ${idUnidad}:`, err);
-        return {
-          id: idUnidad,
-          descripcion: `Unidad ${idUnidad}`
-        };
+        return { id: idUnidad, descripcion: `Unidad ${idUnidad}` };
       }
     });
 
     const unidadesData = await Promise.all(unidadesPromises);
-    const unidadesMap = {};
     unidadesData.forEach(unidad => {
       unidadesMap[unidad.id] = unidad.descripcion;
     });
@@ -145,44 +112,37 @@ const NuevaOrdenCompra = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(null);
         
-        // Obtener todos los proveedores
         const todosLosProveedores = await obtenerTodosLosProveedores();
         setProveedores(todosLosProveedores);
 
-        // Obtener todas las materias primas
         const materiasIds = await obtenerTodasLasMateriasPrimas();
         
-        console.log('Total de materias primas obtenidas:', materiasIds.length);
-        console.log('IDs de materias primas:', materiasIds);
-
         if (Array.isArray(materiasIds) && materiasIds.length > 0) {
           const materiasPromises = materiasIds.map(async (materia) => {
             try {
               const id = materia.id_materia_prima || materia.id;
-              const response = await axios.get(`https://frozenback-test.up.railway.app/api/materias_primas/materias/${id}/`);
+              const response = await axios.get(`${BACKEND_URL}/api/materias_primas/materias/${id}/`);
               return response.data;
             } catch (err) {
-              console.error(`Error obteniendo materia prima ${materia.id_materia_prima}:`, err);
-              return null;
+              console.error(`Error obteniendo detalle de materia prima:`, err);
+              return materia; // Fallback al objeto base si falla el detalle
             }
           });
 
-          const materiasCompletas = (await Promise.all(materiasPromises)).filter(materia => materia !== null);
-          console.log('Materias primas completas cargadas:', materiasCompletas.length);
+          const materiasCompletas = (await Promise.all(materiasPromises)).filter(m => m !== null);
           setMateriasPrimas(materiasCompletas);
           await cargarUnidadesMedida(materiasCompletas);
         } else {
-          console.error('No se pudo obtener la lista de materias primas');
-          setError('No se pudieron cargar las materias primas');
-          toast.error('No se pudieron cargar las materias primas');
+          // Permitir renderizar la pantalla vacía en vez de crashear si la BD está limpia
+          setMateriasPrimas([]);
         }
 
         setLoading(false);
       } catch (err) {
-        console.error('Error al cargar los datos:', err);
-        setError('Error al cargar los datos: ' + err.message);
-        toast.error('Error al cargar los datos: ' + err.message);
+        console.error('Error general al cargar los datos:', err);
+        setError('Error al conectar con el servidor de compras.');
         setLoading(false);
       }
     };
@@ -190,34 +150,22 @@ const NuevaOrdenCompra = () => {
     fetchData();
   }, []);
 
-  // Resto del código permanece igual...
   const calcularCantidadAjustada = (cantidadSolicitada, cantidadMinima) => {
-    if (!cantidadMinima || cantidadMinima <= 0) {
-      return cantidadSolicitada;
-    }
-    
-    if (cantidadSolicitada <= cantidadMinima) {
-      return cantidadMinima;
-    }
-    
+    if (!cantidadMinima || cantidadMinima <= 0) return cantidadSolicitada;
+    if (cantidadSolicitada <= cantidadMinima) return cantidadMinima;
     const multiplos = Math.ceil(cantidadSolicitada / cantidadMinima);
     return multiplos * cantidadMinima;
   };
 
   const mostrarToastAjuste = (ajustada, cantidadMinimaPedido, unidadMedida) => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
-
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
     debounceTimeoutRef.current = setTimeout(() => {
       toast.warning(`La cantidad será ajustada a ${ajustada} ${unidadMedida}`);
     }, 1000);
   };
 
-  // Preparar opciones para react-select
-  const opcionesMateriasPrimas = materiasPrimas.map(materia => {
+  const opcionesMateriasPrimas = (materiasPrimas || []).map(materia => {
     const descripcionUnidad = unidadesMedida[materia.id_unidad] || `Unidad ${materia.id_unidad}`;
-    
     return {
       value: materia.id_materia_prima,
       label: `${materia.nombre} - ${materia.descripcion || ''}`,
@@ -228,14 +176,12 @@ const NuevaOrdenCompra = () => {
     };
   });
 
-  const opcionesProveedores = proveedores.map(proveedor => ({
+  const opcionesProveedores = (proveedores || []).map(proveedor => ({
     value: proveedor.id_proveedor,
     label: `${proveedor.nombre} - ${proveedor.contacto}`
   }));
 
-  const handleMateriaPrimaChange = async (selectedOption) => {
-    console.log('Materia prima seleccionada:', selectedOption);
-    
+  const handleMateriaPrimaChange = (selectedOption) => {
     setFormData(prev => ({
       ...prev,
       materiaPrima: selectedOption,
@@ -244,14 +190,11 @@ const NuevaOrdenCompra = () => {
     }));
 
     setUnidadMedida(selectedOption ? selectedOption.unidad_medida : '');
-    
     const minimaPedido = selectedOption ? selectedOption.cantidad_minima_pedido : 0;
     setCantidadMinimaPedido(minimaPedido);
     setCantidadAjustada(0);
 
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
 
     if (selectedOption && selectedOption.id_proveedor) {
       const proveedorEncontrado = proveedores.find(
@@ -266,69 +209,46 @@ const NuevaOrdenCompra = () => {
       } else {
         setProveedorSeleccionado({
           value: selectedOption.id_proveedor,
-          label: 'Proveedor no encontrado'
+          label: 'Proveedor asignado'
         });
-        toast.warning('Proveedor no encontrado para esta materia prima');
       }
     } else {
       setProveedorSeleccionado(null);
-    }
-
-    if (selectedOption && selectedOption.cantidad_minima_pedido) {
-      const unidadDesc = selectedOption.unidad_medida;
-      toast.info(`Cantidad mínima de pedido: ${selectedOption.cantidad_minima_pedido} ${unidadDesc}`);
     }
   };
 
   const handleCantidadChange = (e) => {
     const cantidadIngresada = parseFloat(e.target.value) || 0;
-    
-    setFormData(prev => ({
-      ...prev,
-      cantidad: e.target.value
-    }));
+    setFormData(prev => ({ ...prev, cantidad: e.target.value }));
 
     if (cantidadMinimaPedido > 0 && cantidadIngresada > 0) {
       const ajustada = calcularCantidadAjustada(cantidadIngresada, cantidadMinimaPedido);
       setCantidadAjustada(ajustada);
-      
       if (ajustada !== cantidadIngresada) {
         mostrarToastAjuste(ajustada, cantidadMinimaPedido, unidadMedida);
-      } else {
-        if (debounceTimeoutRef.current) {
-          clearTimeout(debounceTimeoutRef.current);
-        }
       }
     } else {
       setCantidadAjustada(cantidadIngresada);
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!formData.proveedor || !formData.materiaPrima || !formData.cantidad) {
       toast.error('Por favor, complete todos los campos');
       return;
     }
 
-    const cantidadNumerica = parseFloat(formData.cantidad);
-    if (cantidadNumerica <= 0) {
+    if (parseFloat(formData.cantidad) <= 0) {
       toast.error('La cantidad debe ser mayor a 0');
       return;
     }
 
     try {
       setIsSubmitting(true);
+      if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
 
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-
-      const cantidadFinal = cantidadAjustada > 0 ? cantidadAjustada : cantidadNumerica;
+      const cantidadFinal = cantidadAjustada > 0 ? cantidadAjustada : parseFloat(formData.cantidad);
 
       const ordenCompraData = {
         id_proveedor: parseInt(formData.proveedor),
@@ -340,45 +260,20 @@ const NuevaOrdenCompra = () => {
         ]
       };
 
-      console.log('Enviando datos a la API:', ordenCompraData);
-
-      const response = await axios.post(
-        'https://frozenback-test.up.railway.app/api/compras/ordenes-compra/',
-        ordenCompraData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        }
-      );
-
-      console.log('Respuesta de la API:', response.data);
-      
-      setFormData({
-        proveedor: '',
-        materiaPrima: null,
-        cantidad: ''
+      await axios.post(`${BACKEND_URL}/api/compras/ordenes-compra/`, ordenCompraData, {
+        headers: { 'Content-Type': 'application/json' }
       });
+
+      setFormData({ proveedor: '', materiaPrima: null, cantidad: '' });
       setUnidadMedida('');
       setProveedorSeleccionado(null);
       setCantidadMinimaPedido(0);
       setCantidadAjustada(0);
       
       toast.success('Orden de compra creada exitosamente');
-      
     } catch (err) {
       console.error('Error al crear la orden de compra:', err);
-      let errorMessage = 'Error al crear la orden de compra';
-      
-      if (err.response) {
-        errorMessage += `: ${err.response.status} - ${err.response.data.message || JSON.stringify(err.response.data)}`;
-      } else if (err.request) {
-        errorMessage += ': No se pudo conectar con el servidor';
-      } else {
-        errorMessage += `: ${err.message}`;
-      }
-      
-      toast.error(errorMessage);
+      toast.error('No se pudo procesar la orden en este momento.');
     } finally {
       setIsSubmitting(false);
     }
@@ -386,9 +281,7 @@ const NuevaOrdenCompra = () => {
 
   useEffect(() => {
     return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
+      if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
     };
   }, []);
 
@@ -398,60 +291,20 @@ const NuevaOrdenCompra = () => {
       border: '2px solid #ddd',
       borderRadius: '6px',
       padding: '2px',
-      fontSize: '1rem',
-      backgroundColor: state.isDisabled ? '#f5f5f5' : 'white',
-      '&:hover': {
-        borderColor: '#ccc'
-      }
-    }),
-    menu: (base) => ({
-      ...base,
-      borderRadius: '6px',
-      zIndex: 1000
-    }),
-    option: (base, state) => ({
-      ...base,
-      backgroundColor: state.isFocused ? '#007bff' : 'white',
-      color: state.isFocused ? 'white' : '#333',
-      '&:active': {
-        backgroundColor: '#0056b3'
-      }
-    }),
-    singleValue: (base, state) => ({
-      ...base,
-      color: state.isDisabled ? '#666' : '#333'
+      backgroundColor: state.isDisabled ? '#f5f5f5' : 'white'
     })
   };
 
-  if (loading) {
-    return <div className={styles.loading}>Cargando...</div>;
-  }
-
-  if (error) {
-    return <div className={styles.error}>Error: {error}</div>;
-  }
+  if (loading) return <div className={styles.loading}>Cargando panel de insumos...</div>;
 
   return (
     <div className={styles.container}>
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-      
+      <ToastContainer position="top-right" autoClose={3000} theme="colored" />
       <h1 className={styles.title}>Nueva Orden de Compra</h1>
       
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.formGroup}>
-          <label className={styles.label}>
-            Materia Prima *
-          </label>
+          <label className={styles.label}>Materia Prima *</label>
           <Select
             options={opcionesMateriasPrimas}
             value={formData.materiaPrima}
@@ -461,39 +314,25 @@ const NuevaOrdenCompra = () => {
             styles={customStyles}
             required
           />
-          <small className={styles.helperText}>
-            {opcionesMateriasPrimas.length} materias primas disponibles
-          </small>
         </div>
 
         <div className={styles.formGroup}>
-          <label className={styles.label}>
-            Proveedor *
-          </label>
+          <label className={styles.label}>Proveedor *</label>
           <Select
             options={opcionesProveedores}
             value={proveedorSeleccionado}
-            onChange={() => {}}
-            placeholder="Seleccione primero una materia prima"
-            isSearchable={false}
+            placeholder="Se autocompleta según el insumo"
             isDisabled={true}
             styles={customStyles}
-            required
           />
-          <small className={styles.helperText}>
-            El proveedor se completa automáticamente según la materia prima seleccionada
-          </small>
         </div>
 
         <div className={styles.formGroup}>
-          <label htmlFor="cantidad" className={styles.label}>
-            Cantidad *
-          </label>
+          <label htmlFor="cantidad" className={styles.label}>Cantidad *</label>
           <div className={styles.quantityContainer}>
             <input
               type="number"
               id="cantidad"
-              name="cantidad"
               value={formData.cantidad}
               onChange={handleCantidadChange}
               className={styles.input}
@@ -502,31 +341,24 @@ const NuevaOrdenCompra = () => {
               placeholder="Ingrese la cantidad"
               required
             />
-            {unidadMedida && (
-              <span className={styles.unit}>{unidadMedida}</span>
-            )}
+            {unidadMedida && <span className={styles.unit}>{unidadMedida}</span>}
           </div>
           
           {cantidadMinimaPedido > 0 && (
             <div className={styles.cantidadInfo}>
               <small className={styles.helperText}>
-                Cantidad mínima de pedido: <strong>{cantidadMinimaPedido} {unidadMedida}</strong>
+                Mínimo de pedido: <strong>{cantidadMinimaPedido} {unidadMedida}</strong>
               </small>
-              <br />
               {cantidadAjustada > 0 && parseFloat(formData.cantidad) !== cantidadAjustada && (
                 <small className={styles.ajusteText}>
-                  Cantidad ajustada a ordenar: <strong>{cantidadAjustada} {unidadMedida}</strong>
+                  <br />Cantidad ajustada por lote: <strong>{cantidadAjustada} {unidadMedida}</strong>
                 </small>
               )}
             </div>
           )}
         </div>
 
-        <button 
-          type="submit" 
-          className={styles.submitButton}
-          disabled={isSubmitting}
-        >
+        <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
           {isSubmitting ? 'Creando...' : 'Crear Orden de Compra'}
         </button>
       </form>
