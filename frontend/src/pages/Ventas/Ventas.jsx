@@ -414,7 +414,8 @@ const Ventas = () => {
 					api.get("/productos/productos/"),
 				]);
 
-				setProductosDisponibles(productosResponse.data.results || []);
+				const listaProductos = productosResponse.data?.results || productosResponse.data || [];
+				setProductosDisponibles(Array.isArray(listaProductos) ? listaProductos : []);
 
 				// Cargar estados y clientes
 				await Promise.all([fetchEstados(), fetchClientes()]);
