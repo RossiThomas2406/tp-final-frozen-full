@@ -3,8 +3,8 @@ import axios from "axios";
 import styles from "./CrearOrdenProduccion.module.css";
 
 
-const rawBaseURL = import.meta.env.VITE_API_BASE_URL || "https://frozenback-test.up.railway.app"; 
-
+// 🛡️ Reemplazá 'tu-servidor-render.onrender.com' por el dominio real de tu Django en Render
+const rawBaseURL = import.meta.env.VITE_API_BASE_URL || "https://tu-servidor-render.onrender.com"; 
 
 const cleanBaseURL = rawBaseURL.endsWith("/api") || rawBaseURL.endsWith("/api/") 
   ? rawBaseURL 
