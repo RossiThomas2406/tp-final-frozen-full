@@ -14,21 +14,22 @@ import {
     FaUserPlus,
     FaQuestionCircle,
     FaSearch,
-    FaMapMarkedAlt,
     FaTruckLoading,
     FaCog,
     FaChartBar,
     FaCalendarWeek,
-    FaCalendarAlt, // Nuevo ícono para Calendario Producción
+    FaCalendarAlt, 
 } from 'react-icons/fa';
 
 import { BiCalendarCheck } from "react-icons/bi";
 import { HiAdjustments } from "react-icons/hi";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL;
+// 🚀 IMPLANTADO: Host unificado y fijo de Render para producción real
+const rawBaseURL = import.meta.env.VITE_API_BASE_URL || "https://frozen-backend-d5t3.onrender.com/api/"; 
+const cleanBaseURL = rawBaseURL.endsWith("/") ? rawBaseURL : `${rawBaseURL}/`;
 
 const api = axios.create({
-  baseURL: baseURL,
+  baseURL: cleanBaseURL,
 });
 
 // Componente para ícono combinado
@@ -47,10 +48,9 @@ const CalendarProductionIcon = () => (
   </div>
 );
 
-// El "mapa" para asignar un ícono a cada título
 const iconMap = {
   "Planificación Semanal": <FaCalendarWeek />,
-  "Calendario Produccion": <CalendarProductionIcon />, // Nuevo ícono agregado
+  "Calendario Produccion": <CalendarProductionIcon />, 
   "Órdenes Producción": <FaIndustry />,
   "Órdenes de Venta": <FaShoppingCart />,
   "Stock Productos": <FaBoxes />,
@@ -69,7 +69,6 @@ const iconMap = {
 
 const DefaultIcon = <FaQuestionCircle />;
 
-// El resto de tu componente permanece igual...
 function MenuPrincipal() {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
@@ -83,14 +82,22 @@ function MenuPrincipal() {
         setError(null)
 
         const usuarioData = localStorage.getItem('usuario');
+        if (!usuarioData) {
+          throw new Error("No hay sesión activa");
+        }
+        
         const parsedData = JSON.parse(usuarioData);
         const rolUsuario = parsedData.rol;
         
-        // Intentamos pedir los permisos al backend
-        const response = await api.get(`/empleados/permisos-rol/${encodeURIComponent(rolUsuario)}`);
+        // 🛡️ CORREGIDO: Se remueve el slash inicial descarriador para respetar /api/
+        const response = await api.get(`empleados/permisos-rol/${encodeURIComponent(rolUsuario)}/`);
         
-        // 🚨 SALVAVIDAS: Si la BD viene vacía, le inyectamos la lista por defecto
-        const opcionesMenu = response.data?.permisos || [];
+        // Verificación elástica por si la respuesta viene con estructura HTML
+        if (typeof response.data === 'string' && response.data.includes('<!doctype html>')) {
+          throw new Error("Respuesta inválida del servidor");
+        }
+
+        const opcionesMenu = response.data?.permisos || response.data || [];
         
         if (opcionesMenu.length === 0) {
           throw new Error("Usar lista por defecto");
@@ -98,10 +105,8 @@ function MenuPrincipal() {
         
         setData(opcionesMenu);
       } catch (err) {
-        console.warn('Cargando menú de emergencia por falta de datos en Supabase');
+        console.warn('Cargando menú de emergencia por falta de datos o error de red en Supabase');
         
-        // 🚀 LISTA DE RESPALDO TOTAL EXTRAÍDA DE TU APP.JSX
-        // Esto garantiza que el menú se dibuje sí o sí con todos tus módulos
         const menuEmergencia = [
           { id_permiso: 1, titulo: "Órdenes de Venta", link: "/verOrdenesVenta", descripcion: "Gestión de Órdenes de Venta" },
           { id_permiso: 2, titulo: "Órdenes de Venta", link: "/crearOrdenVenta", descripcion: "Crear Orden de Venta" },
@@ -145,7 +150,6 @@ function MenuPrincipal() {
   return (
     <div className={styles.home}>
       <div className={styles.content}>
-        {/* Usamos un fallback seguro de arreglo vacío por si acaso */}
         {(data || []).map(item => {
           const Icono = iconMap[item.titulo] || DefaultIcon;
 
@@ -163,4 +167,4 @@ function MenuPrincipal() {
   )
 }
 
-export default MenuPrincipal
+export default MenuPrincipal;
