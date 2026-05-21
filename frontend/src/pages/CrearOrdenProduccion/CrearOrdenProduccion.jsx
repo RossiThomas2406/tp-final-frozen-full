@@ -15,131 +15,109 @@ const CrearOrdenProduccion = () => {
     startDate: "",
     product: "",
     quantity: "",
-    // productionLine: "", // <--- ELIMINADO
   });
 
   const [alert, setAlert] = useState({ message: "", type: "", visible: false });
   const [productOptions, setProductOptions] = useState([]);
-  // const [productionLineOptions, setProductionLineOptions] = useState([]); // <--- ELIMINADO
-  // const [filteredLineOptions, setFilteredLineOptions] = useState([]); // <--- ELIMINADO
   const [loading, setLoading] = useState(true);
   const [responsable, setResponsable] = useState("");
   const [idUsuario, setIdUsuario] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [selectedProductUnit, setSelectedProductUnit] = useState("");
-  // const [loadingLines, setLoadingLines] = useState(false); // <--- ELIMINADO
   const [errors, setErrors] = useState({
     product: "",
     quantity: "",
-    // productionLine: "", // <--- ELIMINADO
     startDate: "",
   });
   const [touched, setTouched] = useState({
     product: false,
     quantity: false,
-    // productionLine: false, // <--- ELIMINADO
     startDate: false,
   });
 
-  // --- ELIMINADOS ESTADOS DE DESPERDICIO ---
-  // const [porcentajeDesperdicio, setPorcentajeDesperdicio] = useState(null);
-  // const [cantidadNetaEstimada, setCantidadNetaEstimada] = useState(null);
-  // const [loadingDesperdicio, setLoadingDesperdicio] = useState(false);
-
-  // Estado para controlar si el formulario es válido
   const [isFormValid, setIsFormValid] = useState(false);
-  // Estado para controlar si se intentó enviar el formulario
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   // Efecto para validar el formulario completo cuando cambien los datos
   useEffect(() => {
     validateForm();
-  }, [formData]); // <--- Dependencia de filteredLineOptions eliminada
+  }, [formData]);
 
   // Función para validar si el formulario completo es válido
   const validateForm = () => {
-    const { product, quantity, startDate } = formData; // <--- Se quitó productionLine
-
-    // Verificar que todos los campos requeridos estén completos y válidos
+    const { product, quantity, startDate } = formData;
     const isValid =
       product.trim() !== "" &&
       quantity.trim() !== "" &&
       !isNaN(quantity) &&
       parseInt(quantity) > 0 &&
       startDate.trim() !== "";
-    // --- Validaciones de productionLine y filteredLineOptions eliminadas ---
 
     setIsFormValid(isValid);
     return isValid;
   };
 
-  // Efecto para cargar productos
-  useEffect(() => {
-// Efecto para cargar productos
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
+  // --- 🛡️ FUNCIONES DE CARGA EN LA RAÍZ DEL COMPONENTE (FUERA DE LOS HOOKS) ---
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      // Petición corregida sin barra inicial para no romper el prefijo /api/
+      const productosResponse = await api.get("productos/listar/");
 
-        // 🛡️ CORREGIDO: Quitamos el slash inicial para respetar el prefijo /api/
-        const productosResponse = await api.get("productos/listar/");
-
-        // 🛡️ Blindaje anti-HTML: Si se cuela un string de la SPA, lo tratamos como vacío
-        if (typeof productosResponse.data === 'string' && productosResponse.data.includes('<!doctype html>')) {
-          throw new Error("El servidor devolvió un HTML en lugar del JSON de productos.");
-        }
-
-        // 🛡️ Extraer el listado de productos de forma elástica (venga empaquetado o plano)
-        const productsArray = productosResponse.data?.results || (Array.isArray(productosResponse.data) ? productosResponse.data : []);
-
-        if (!Array.isArray(productsArray)) {
-          throw new Error("La respuesta de productos no contiene un formato válido");
-        }
-
-        const transformedProducts = productsArray.map((product) => ({
-          value: (product.id_producto || product.id || "").toString(),
-          label: product.nombre || "Producto sin nombre",
-          descripcion: product.descripcion || "",
-          unidad_medida: product.unidad?.descripcion || product.unidad_medida || "Unidades",
-        }));
-
-        if (transformedProducts.length === 0) {
-          throw new Error("No se encontraron productos en el catálogo");
-        }
-
-        setProductOptions(transformedProducts);
-
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        const errorMessage = error.response?.data?.message || error.message;
-        showAlert("Error al cargar los datos: " + errorMessage, "error");
-
-        setProductOptions([]);
-      } {
-        setLoading(false);
+      if (typeof productosResponse.data === 'string' && productosResponse.data.includes('<!doctype html>')) {
+        throw new Error("El servidor devolvió un HTML de rescate en lugar del JSON de productos.");
       }
-    };
 
-    // Obtener responsable e id_usuario del localStorage
-    const obtenerUsuario = () => {
-      try {
-        const usuarioStorage = localStorage.getItem("usuario");
-        if (usuarioStorage) {
-          const usuario = JSON.parse(usuarioStorage);
-          if (usuario.nombre && usuario.apellido) {
-            setResponsable(`${usuario.nombre} ${usuario.apellido}`);
-          }
-          if (usuario.id_empleado) {
-            setIdUsuario(usuario.id_empleado.toString());
-          }
-        }
-      } catch (error) {
-        console.error("Error al obtener datos del usuario:", error);
-        setResponsable("Usuario no identificado");
+      // Adaptador elástico por si viene plano o paginado en .results
+      const productsArray = productosResponse.data?.results || (Array.isArray(productosResponse.data) ? productosResponse.data : []);
+
+      if (!Array.isArray(productsArray)) {
+        throw new Error("La respuesta de productos no contiene un formato válido");
       }
-    };
 
-    // Inicializar fecha en MAÑANA
+      const transformedProducts = productsArray.map((product) => ({
+        value: (product.id_producto || product.id || "").toString(),
+        label: product.nombre || "Producto sin nombre",
+        descripcion: product.descripcion || "",
+        unidad_medida: product.unidad?.descripcion || product.unidad_medida || "Unidades",
+      }));
+
+      if (transformedProducts.length === 0) {
+        throw new Error("No se encontraron productos en el catálogo");
+      }
+
+      setProductOptions(transformedProducts);
+
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      const errorMessage = error.response?.data?.message || error.message;
+      showAlert("Error al cargar los datos: " + errorMessage, "error");
+      setProductOptions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const obtenerUsuario = () => {
+    try {
+      const usuarioStorage = localStorage.getItem("usuario");
+      if (usuarioStorage) {
+        const usuario = JSON.parse(usuarioStorage);
+        if (usuario.nombre && usuario.apellido) {
+          setResponsable(`${usuario.nombre} ${usuario.apellido}`);
+        }
+        if (usuario.id_empleado) {
+          setIdUsuario(usuario.id_empleado.toString());
+        }
+      }
+    } catch (error) {
+      console.error("Error al obtener datos del usuario:", error);
+      setResponsable("Usuario no identificado");
+    }
+  };
+
+  // 🛡️ EFECTO DE INICIALIZACIÓN CONFIGURADO CORRECTAMENTE
+  useEffect(() => {
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -153,48 +131,7 @@ const CrearOrdenProduccion = () => {
     obtenerUsuario();
     fetchData();
   }, []);
-
-    // Obtener responsable e id_usuario del localStorage
-    const obtenerUsuario = () => {
-      try {
-        const usuarioStorage = localStorage.getItem("usuario");
-        if (usuarioStorage) {
-          const usuario = JSON.parse(usuarioStorage);
-          if (usuario.nombre && usuario.apellido) {
-            setResponsable(`${usuario.nombre} ${usuario.apellido}`);
-          }
-          if (usuario.id_empleado) {
-            setIdUsuario(usuario.id_empleado.toString());
-          }
-        }
-      } catch (error) {
-        console.error("Error al obtener datos del usuario:", error);
-        setResponsable("Usuario no identificado");
-      }
-    };
-
-    // --- ¡CAMBIO 1! ---
-    // Inicializar fecha en MAÑANA
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowISO = tomorrow.toISOString().split("T")[0];
-
-    setFormData((prev) => ({
-      ...prev,
-      startDate: tomorrowISO, // Valor por defecto es MAÑANA
-    }));
-    // --- FIN CAMBIO 1 ---
-
-    obtenerUsuario();
-    fetchData();
-  }, []);
-
-  // --- Función fetchPorcentajeDesperdicio ELIMINADA ---
-  // --- Función calcularCantidadNetaEstimada ELIMINADA ---
-  // --- Función fetchLineasPorProducto ELIMINADA ---
-
-  // Validaciones individuales por campo
+  
   const validarCampo = (name, value) => {
     switch (name) {
       case "product":
