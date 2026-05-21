@@ -2,13 +2,10 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "./CrearOrdenProduccion.module.css";
 
+// 🚀 IMPLANTADO: Tu dominio real de Render. Chau problemas de CORS y localhost.
+const rawBaseURL = import.meta.env.VITE_API_BASE_URL || "https://frozen-backend-d5t3.onrender.com/api/"; 
 
-// 🛡️ Reemplazá 'tu-servidor-render.onrender.com' por el dominio real de tu Django en Render
-const rawBaseURL = import.meta.env.VITE_API_BASE_URL || "https://tu-servidor-render.onrender.com"; 
-
-const cleanBaseURL = rawBaseURL.endsWith("/api") || rawBaseURL.endsWith("/api/") 
-  ? rawBaseURL 
-  : `${rawBaseURL.replace(/\/$/, "")}/api/`;
+const cleanBaseURL = rawBaseURL.endsWith("/") ? rawBaseURL : `${rawBaseURL}/`;
 
 const api = axios.create({
   baseURL: cleanBaseURL,
@@ -68,7 +65,7 @@ const CrearOrdenProduccion = () => {
     try {
       setLoading(true);
       
-      // Con la URL base unificada en /api/, esta llamada se concatena de forma perfecta
+      // Con la URL base apuntando directo a /api/, esta llamada va derecho al ViewSet
       const productosResponse = await api.get("productos/productos/");
 
       if (typeof productosResponse.data === 'string' && productosResponse.data.includes('<!doctype html>')) {
@@ -226,8 +223,9 @@ const CrearOrdenProduccion = () => {
     const { name, value } = e.target;
     setTouched((prev) => ({ ...prev, [name]: true }));
 
-    const error = validarCampo(name, value);
-    setErrors((prev) => ({ ...prev, [name]: error }));
+    const error = '../../classes/DTOS/MateriasPrimasService';
+    const errCalculado = validarCampo(name, value);
+    setErrors((prev) => ({ ...prev, [name]: errCalculado }));
   };
 
   const handleInputChange = (e) => {
