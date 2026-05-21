@@ -80,33 +80,39 @@ const OrdenesDespacho = () => {
     fetchOrdenes();
   }, [repartidorFiltro, estadoFiltro]);
 
-  const fetchRepartidores = async () => {
+const fetchRepartidores = async () => {
     try {
       const response = await api.get('despachos/repartidores/');
-      setRepartidores(response.data.results);
+      // 🛡️ Blindaje: si viene en .results se extrae de ahí, sino se usa el array directo
+      const datos = response.data?.results || (Array.isArray(response.data) ? response.data : []);
+      setRepartidores(datos);
     } catch (err) {
       console.error('Error fetching repartidores:', err);
       showError('Error al cargar la lista de repartidores');
+      setRepartidores([]); // Fallback seguro
     }
   };
 
   const fetchEstados = async () => {
     try {
       const response = await api.get('despachos/estado-despacho/');
-      setEstados(response.data.results);
+      // 🛡️ Blindaje: si viene en .results se extrae de ahí, sino se usa el array directo
+      const datos = response.data?.results || (Array.isArray(response.data) ? response.data : []);
+      setEstados(datos);
     } catch (err) {
       console.error('Error fetching estados:', err);
       showError('Error al cargar los estados de despacho');
+      setEstados([]); // Fallback seguro
     }
   };
 
   const fetchOrdenes = async () => {
     try {
       setLoading(true);
+      setError(null);
       let url = 'despachos/ordenes-despacho/';
       const params = new URLSearchParams();
       
-      // Agregar filtro por repartidor si está seleccionado
       if (repartidorFiltro) {
         const repartidorSeleccionado = repartidores.find(r => r.id_repartidor === parseInt(repartidorFiltro));
         if (repartidorSeleccionado) {
@@ -114,24 +120,27 @@ const OrdenesDespacho = () => {
         }
       }
       
-      // Agregar filtro por estado si está seleccionado
       if (estadoFiltro) {
         params.append('estado', estadoFiltro);
       }
       
-      // Si hay parámetros, agregarlos a la URL
       if (params.toString()) {
         url += `?${params.toString()}`;
       }
       
       const response = await api.get(url);
-      setOrdenes(response.data);
+      
+      // 🛡️ Blindaje definitivo para el listado de órdenes
+      const listaOrdenes = response.data?.results || (Array.isArray(response.data) ? response.data : []);
+      setOrdenes(listaOrdenes);
+      
       setLoading(false);
     } catch (err) {
+      console.error('Error fetching orders:', err);
       const errorMessage = 'Error al cargar las órdenes de despacho';
       setError(errorMessage);
+      setOrdenes([]);
       setLoading(false);
-      console.error('Error fetching orders:', err);
       showError(errorMessage);
     }
   };
