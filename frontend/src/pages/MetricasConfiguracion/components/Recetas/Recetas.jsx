@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Table, Modal, Form, Input, InputNumber, Select, Card, Space, Typography, message } from 'antd';
+import { Button, Table, Modal, Form, Input, InputNumber, Select, Card, Space, Typography } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, ContainerOutlined } from '@ant-design/icons';
 import { api } from '../../../../services/api';
 import toast from 'react-hot-toast'; 
@@ -25,7 +25,7 @@ export const Recetas = () => {
     // Estado para guardar la lista de unidades
     const [unidades, setUnidades] = useState([]);
 
-    // --- FUNCIONES DE FETCH (RECOLECCIÓN TOTAL) ---
+    // --- FUNCIONES DE FETCH ---
 
     const fetchRecetas = useCallback(async () => {
         setLoading(true);
@@ -67,7 +67,6 @@ export const Recetas = () => {
         }
     }, []);
 
-    // Este fetch trae el `id_unidad`
     const fetchMateriasPrimas = useCallback(async () => {
         let allMaterias = [];
         let nextUrl = '/materias_primas/materias/'; 
@@ -86,7 +85,6 @@ export const Recetas = () => {
         }
     }, []);
 
-    // Función para traer la lista de unidades
     const fetchUnidades = useCallback(async () => {
         let allUnidades = [];
         let nextUrl = '/productos/unidades/'; 
@@ -119,7 +117,6 @@ export const Recetas = () => {
         }
     }, []); 
 
-    // --- useEffect (Carga Inicial) ---
     useEffect(() => {
         Promise.all([
             fetchMateriasPrimas(),
@@ -175,7 +172,6 @@ export const Recetas = () => {
             await form.validateFields(); 
             
             setLoading(true);
-
             const recetaIdNum = Number(selectedRecetaId);
             
             if (!recetaIdNum) {
@@ -211,7 +207,7 @@ export const Recetas = () => {
             setEditingRecetaMateria(null);
             fetchRecetaMaterias(selectedRecetaId);
         } catch (error) {
-            console.error('Error saving receta materia:', { error, values: form.getFieldsValue(), errorFields: form.getFieldsError() });
+            console.error('Error saving receta materia:', error);
             toast.dismiss(loadingToast); 
 
             if (error.errorFields && error.errorFields.length > 0) {
@@ -300,9 +296,7 @@ export const Recetas = () => {
             form.setFieldsValue({
                 id_materia_prima: recetaMateria.id_materia_prima,
                 cantidad: recetaMateria.cantidad,
-                // Ya no seteamos 'unidad_medida' aquí
             });
-
         } else {
             form.resetFields();
         }
@@ -319,14 +313,8 @@ export const Recetas = () => {
         }
     };
 
-    // --- Definiciones de Columnas ---
-    
     const columns = [
-        {
-            title: 'Descripción',
-            dataIndex: 'descripcion',
-            key: 'descripcion',
-        },
+        { title: 'Descripción', dataIndex: 'descripcion', key: 'descripcion' },
         {
             title: 'Producto',
             dataIndex: 'id_producto',
@@ -341,21 +329,9 @@ export const Recetas = () => {
             key: 'acciones',
             render: (_, record) => (
                 <Space size="middle">
-                    <Button 
-                        type="default" 
-                        icon={<EditOutlined style={{ color: '#faad14' }} />} 
-                        onClick={() => openRecetaModal(record)}
-                    />
-                    <Button 
-                        type="default" 
-                        danger 
-                        icon={<DeleteOutlined />} 
-                        onClick={() => handleDelete(record.id_receta)}
-                    />
-                    <Button 
-                        type="link" 
-                        onClick={() => showRecetaMaterias(record)}
-                    >
+                    <Button type="default" icon={<EditOutlined style={{ color: '#faad14' }} />} onClick={() => openRecetaModal(record)} />
+                    <Button type="default" danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.id_receta)} />
+                    <Button type="link" onClick={() => showRecetaMaterias(record)}>
                         {record.id_receta === selectedRecetaId ? 'Ocultar Ingredientes' : 'Ver Ingredientes'}
                     </Button>
                 </Space>
@@ -372,46 +348,20 @@ export const Recetas = () => {
                 </Title>
             )}
             extra={
-                <Button 
-                    type="primary" 
-                    icon={<PlusOutlined />} 
-                    onClick={() => openRecetaModal()}
-                    size="large"
-                >
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => openRecetaModal()} size="large">
                     Agregar Receta
                 </Button>
             }
-            style={{ 
-                borderRadius: 'var(--card-border-radius)', 
-                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.05)',
-            }}
+            style={{ borderRadius: 'var(--card-border-radius)', boxShadow: '0 8px 24px rgba(0, 0, 0, 0.05)' }}
         >
             {contextHolder}
-            <Table 
-                columns={columns} 
-                dataSource={recetas} 
-                rowKey="id_receta"
-                loading={loading}
-                pagination={false}
-            />
+            <Table columns={columns} dataSource={recetas} rowKey="id_receta" loading={loading} pagination={false} />
 
             {selectedRecetaId && (
                 <Card 
                     className="ingredients-card"
-                    title={(
-                        <Title level={5} style={{ margin: 0 }}>
-                            Ingredientes de la Receta: {recetas.find(r => r.id_receta === selectedRecetaId)?.descripcion}
-                        </Title>
-                    )}
-                    extra={
-                        <Button 
-                            type="primary" 
-                            icon={<PlusOutlined />} 
-                            onClick={() => openRecetaMateriaModal()}
-                        >
-                            Agregar Ingrediente
-                        </Button>
-                    }
+                    title={<Title level={5} style={{ margin: 0 }}>Ingredientes de la Receta: {recetas.find(r => r.id_receta === selectedRecetaId)?.descripcion}</Title>}
+                    extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => openRecetaMateriaModal()}>Agregar Ingrediente</Button>}
                     style={{ marginTop: 30 }}
                 >
                     <Table 
@@ -436,14 +386,9 @@ export const Recetas = () => {
                                 dataIndex: 'id_materia_prima', 
                                 key: 'unidad',
                                 render: (id_materia_prima) => {
-                                    // 1. Encontrar la materia prima
                                     const materia = materiasPrimas.find(m => m.id_materia_prima === id_materia_prima);
                                     if (!materia) return 'N/A';
-                                    
-                                    // 2. Encontrar la unidad usando el id_unidad
                                     const unidad = unidades.find(u => u.id_unidad === materia.id_unidad);
-                                    
-                                    // 3. Renderizar el texto (usando 'descripcion' del JSON de unidades)
                                     return unidad ? (unidad.descripcion || 'N/A') : 'N/A';
                                 },
                             },
@@ -477,7 +422,7 @@ export const Recetas = () => {
                     form.resetFields();
                 }}
                 confirmLoading={loading}
-                destroyOnClose 
+                destroyOnHidden // 🚀 MODIFICADO: Antd satisfacción total
             >
                 <Form form={form} layout="vertical"> 
                     <Form.Item name="descripcion" label="Descripción" rules={[{ required: true, message: 'Por favor ingrese una descripción' }]}>
@@ -491,20 +436,15 @@ export const Recetas = () => {
                             { required: true, message: 'Por favor seleccione un producto' },
                             ({ getFieldValue }) => ({
                                 validator(_, value) {
-                                    if (!value) {
-                                        return Promise.resolve();
-                                    }
-                                    
+                                    if (!value) return Promise.resolve();
                                     const isDuplicate = recetas.some(receta => 
                                         receta.id_producto === value && 
                                         (!editingReceta || receta.id_receta !== editingReceta.id_receta)
                                     );
-                                    
                                     if (isDuplicate) {
                                         const productoName = productos.find(p => p.id_producto === value)?.nombre || 'este producto';
                                         return Promise.reject(new Error(`Ya existe receta para ${productoName}.`));
                                     }
-                                    
                                     return Promise.resolve();
                                 },
                             }),
@@ -527,12 +467,12 @@ export const Recetas = () => {
                 open={isMateriaModalVisible}
                 onOk={handleMateriaSubmit}
                 onCancel={() => {
-                    setIsMateriaModalVisible(false); // Cierra este modal
+                    setIsMateriaModalVisible(false);
                     setEditingRecetaMateria(null);
                     form.resetFields();
                 }}
                 confirmLoading={loading}
-                destroyOnClose
+                destroyOnHidden // 🚀 MODIFICADO: Antd satisfacción total
             >
                 <Form form={form} layout="vertical">
                     <Form.Item 
@@ -542,9 +482,7 @@ export const Recetas = () => {
                             { required: true, message: 'Por favor seleccione una materia prima' },
                             ({ getFieldValue }) => ({
                                 validator(_, value) {
-                                    if (!value) {
-                                        return Promise.resolve();
-                                    }
+                                    if (!value) return Promise.resolve();
                                     const isDuplicate = recetaMaterias.some(materia => 
                                         materia.id_materia_prima === value &&
                                         (!editingRecetaMateria || materia.id_receta_materia_prima !== editingRecetaMateria.id_receta_materia_prima)
@@ -558,12 +496,7 @@ export const Recetas = () => {
                             }),
                         ]}
                     >
-                        <Select 
-                            placeholder="Seleccione una materia prima" 
-                            showSearch 
-                            optionFilterProp="children"
-                            // Ya no necesitamos actualizar 'unidad_medida' aquí
-                        >
+                        <Select placeholder="Seleccione una materia prima" showSearch optionFilterProp="children">
                             {materiasPrimas.map(materia => (
                                 <Option key={materia.id_materia_prima} value={materia.id_materia_prima}>
                                     {materia.nombre}
@@ -576,10 +509,7 @@ export const Recetas = () => {
                         name="cantidad"
                         label="Cantidad"
                         rules={[
-                            { 
-                                required: true, 
-                                message: 'Por favor ingrese la cantidad',
-                            },
+                            { required: true, message: 'Por favor ingrese la cantidad' },
                             {
                                 type: 'number',
                                 min: 0.01,
@@ -596,9 +526,6 @@ export const Recetas = () => {
                             parser={value => value.replace(',', '.')}
                         />
                     </Form.Item>
-
-                    {/* 🛑 Eliminado el Form.Item de "Unidad de Medida" de aquí */}
-
                 </Form>
             </Modal>
         </Card>
