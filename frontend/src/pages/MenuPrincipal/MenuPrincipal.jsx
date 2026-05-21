@@ -126,19 +126,18 @@ function MenuPrincipal() {
     )
   }
 
-  // 🛡️ REFACTORIZADO: Extractor inteligente por palabras clave para blindaje absoluto de íconos
+// 🛡️ CORREGIDO: Ajuste estricto de palabras clave para eliminar opciones fantasma
   const obtenerIconoInteligente = (descripcionRaw, tituloRaw) => {
     const desc = (descripcionRaw || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const tit = (tituloRaw || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     
-    // Evaluamos el contenido de la descripción o el título por prioridades
     if (desc.includes("dashboard") || tit.includes("dashboard")) return <FaChartBar />;
-    if (desc.includes("configuracion") || desc.includes("metrica") || tit.includes("configuracion")) return <FaCog />;
+    if (desc.includes("configuracion") || desc.includes("metricas y") || tit.includes("configuracion")) return <FaCog />;
     if (desc.includes("empleado") || desc.includes("usuario") || tit.includes("empleado")) return <FaUserPlus />;
     if (desc.includes("despacho") || tit.includes("despacho")) return <FaTruckLoading />;
-    if (desc.includes("trazabilidad") || desc.includes("buscar") || tit.includes("trazabilidad")) return <FaSearch />;
+    if (desc.includes("trazabilidad") || tit.includes("trazabilidad")) return <FaSearch />;
     
-    // Lotes (Materias primas o Productos)
+    // Lotes
     if (desc.includes("lotes") || tit.includes("lotes")) return <FaBarcode />;
     
     // Órdenes de trabajo
@@ -151,11 +150,11 @@ function MenuPrincipal() {
     if (desc.includes("calendario") || tit.includes("calendario")) return <CalendarProductionIcon />;
     if (desc.includes("planificacion") || tit.includes("planificacion") || desc.includes("semanal")) return <FaCalendarWeek />;
     
-    // Distinción entre Productos y Materias Primas
+    // Stock / Almacén (Materias primas o Productos)
     if (desc.includes("materia") || desc.includes("prima") || tit.includes("materia")) return <FaWarehouse />;
-    if (desc.includes("producto") || tit.includes("producto")) return <FaBoxes />;
+    if (desc.includes("stock productos") || tit.includes("stock productos") || desc.includes("ver stock productos")) return <FaBoxes />;
     
-    // Compras y Ventas generales
+    // Compras y Ventas
     if (desc.includes("compra") || tit.includes("compra") || desc.includes("recepcion")) return <FaTruck />;
     if (desc.includes("venta") || tit.includes("venta")) return <FaShoppingCart />;
     if (desc.includes("produccion") || tit.includes("produccion")) return <FaIndustry />;
