@@ -24,7 +24,7 @@ import {
 import { BiCalendarCheck } from "react-icons/bi";
 import { HiAdjustments } from "react-icons/hi";
 
-// 🚀 IMPLANTADO: Host unificado y fijo de Render para producción real
+// 🚀 Host unificado y fijo de Render para producción real
 const rawBaseURL = import.meta.env.VITE_API_BASE_URL || "https://frozen-backend-d5t3.onrender.com/api/"; 
 const cleanBaseURL = rawBaseURL.endsWith("/") ? rawBaseURL : `${rawBaseURL}/`;
 
@@ -48,23 +48,28 @@ const CalendarProductionIcon = () => (
   </div>
 );
 
+// 🛡️ RECONFIGURADO: Ahora mapeamos por DESCRIPCIÓN (que es única por cada tarjeta)
 const iconMap = {
-  "Planificación Semanal": <FaCalendarWeek />,
-  "Calendario Produccion": <CalendarProductionIcon />, 
-  "Órdenes Producción": <FaIndustry />,
-  "Órdenes de Venta": <FaShoppingCart />,
-  "Stock Productos": <FaBoxes />,
-  "Stock Materias Primas": <FaWarehouse />,
-  "Órdenes de Compra": <FaTruck />,
-  "Lotes Materias Primas": <FaBarcode />,
-  "Lotes Productos": <FaBarcode />,
-  "Registrar Nuevo Empleado": <FaUserPlus />,
-  "Trazabilidad de Orden de Venta": <FaSearch />,
-  "Gestión de Órdenes de Despacho": <FaTruckLoading />,
-  "Configuración": <FaCog />,
-  "Dashboard": <FaChartBar />,
-  "Ordenes de Trabajo": <BiCalendarCheck />,
-  "Lineas de Producción": <HiAdjustments />,
+  "gestion de ordenes de venta": <FaShoppingCart />,
+  "crear orden de venta": <FaShoppingCart />,
+  "crear orden produccion": <FaIndustry />,
+  "crear orden de compra": <FaTruck />,
+  "ver ordenes produccion": <FaIndustry />,
+  "stock productos": <FaBoxes />,
+  "lotes productos": <FaBarcode />,
+  "stock materias primas": <FaWarehouse />,
+  "ver ordenes de compra": <FaTruck />,
+  "lineas de produccion": <HiAdjustments />,
+  "gestion de ordenes de despacho": <FaTruckLoading />,
+  "ordenes de trabajo": <BiCalendarCheck />,
+  "trazabilidad de orden de venta": <FaSearch />,
+  "dashboard analitico": <FaChartBar />,
+  "planificacion semanal": <FaCalendarWeek />,
+  "lotes materias primas": <FaBarcode />,
+  "metricas y configuracion": <FaCog />,
+  "ejecutar planificacion mrp": <FaCalendarWeek />,
+  "registrar nuevo empleado": <FaUserPlus />,
+  "calendario produccion": <CalendarProductionIcon />,
 };
 
 const DefaultIcon = <FaQuestionCircle />;
@@ -89,10 +94,8 @@ function MenuPrincipal() {
         const parsedData = JSON.parse(usuarioData);
         const rolUsuario = parsedData.rol;
         
-        // 🛡️ CORREGIDO: Se remueve el slash inicial descarriador para respetar /api/
         const response = await api.get(`empleados/permisos-rol/${encodeURIComponent(rolUsuario)}/`);
         
-        // Verificación elástica por si la respuesta viene con estructura HTML
         if (typeof response.data === 'string' && response.data.includes('<!doctype html>')) {
           throw new Error("Respuesta inválida del servidor");
         }
@@ -147,11 +150,23 @@ function MenuPrincipal() {
     )
   }
 
+  // Helper elástico para remover acentos y dejar el texto plano para matchear perfecto
+  const normalizarTexto = (texto) => {
+    if (!texto) return "";
+    return texto
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Remueve acentos
+      .trim();
+  };
+
   return (
     <div className={styles.home}>
       <div className={styles.content}>
         {(data || []).map(item => {
-          const Icono = iconMap[item.titulo] || DefaultIcon;
+          // Buscamos la descripción en minúsculas y sin acentos dentro del diccionario
+          const llaveBusqueda = normalizarTexto(item.descripcion);
+          const Icono = iconMap[llaveBusqueda] || DefaultIcon;
 
           return (
             <div key={item.id_permiso} onClick={() => navigate(item.link)} className={styles.card}>
