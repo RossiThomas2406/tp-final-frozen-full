@@ -282,7 +282,7 @@ const Ventas = () => {
 		try {
 			setLoading(true);
 			// CAMBIO DE URL: Usamos /listar/ en lugar de /ordenes-venta/
-			const response = await api.get(`/ventas/ordenes-venta/listar/`);
+			const response = await api.get(`ventas/ordenes-venta/listar/`);
 
 			// Como la función manual devuelve el array directo (sin .results)
 			const data = response.data;
@@ -301,9 +301,11 @@ const Ventas = () => {
 
 
 	// Función para obtener estados disponibles blindada
+// Función para obtener estados disponibles blindada
     const fetchEstados = async () => {
         try {
-            const response = await api.get("/ventas/estados-venta/");
+            // 🛡️ CORREGIDO: Quitamos la barra inicial para respetar el prefijo /api/
+            const response = await api.get("ventas/estados-venta/");
             const estData = response.data?.results || response.data || [];
             setEstadosDisponibles(Array.isArray(estData) ? estData : []);
         } catch (err) {
@@ -315,8 +317,16 @@ const Ventas = () => {
     // Función para obtener clientes disponibles blindada
     const fetchClientes = async () => {
         try {
-            const response = await api.get("/ventas/clientes/");
-            console.log("Clientes obtenidos:", response.data);
+            // 🛡️ CORREGIDO: Quitamos la barra inicial para que apunte bien en Render
+            const response = await api.get("ventas/clientes/");
+            console.log("Clientes obtenidos correctamente");
+            
+            // Si por algún motivo se llega a colar un string HTML, lo convertimos en array vacío
+            if (typeof response.data === 'string' && response.data.includes('<!doctype html>')) {
+                setClientesDisponibles([]);
+                return;
+            }
+
             const cliData = response.data?.results || response.data || [];
             setClientesDisponibles(Array.isArray(cliData) ? cliData : []);
         } catch (err) {
