@@ -48,30 +48,6 @@ const CalendarProductionIcon = () => (
   </div>
 );
 
-// 🛡️ RECONFIGURADO: Ahora mapeamos por DESCRIPCIÓN (que es única por cada tarjeta)
-const iconMap = {
-  "gestion de ordenes de venta": <FaShoppingCart />,
-  "crear orden de venta": <FaShoppingCart />,
-  "crear orden produccion": <FaIndustry />,
-  "crear orden de compra": <FaTruck />,
-  "ver ordenes produccion": <FaIndustry />,
-  "stock productos": <FaBoxes />,
-  "lotes productos": <FaBarcode />,
-  "stock materias primas": <FaWarehouse />,
-  "ver ordenes de compra": <FaTruck />,
-  "lineas de produccion": <HiAdjustments />,
-  "gestion de ordenes de despacho": <FaTruckLoading />,
-  "ordenes de trabajo": <BiCalendarCheck />,
-  "trazabilidad de orden de venta": <FaSearch />,
-  "dashboard analitico": <FaChartBar />,
-  "planificacion semanal": <FaCalendarWeek />,
-  "lotes materias primas": <FaBarcode />,
-  "metricas y configuracion": <FaCog />,
-  "ejecutar planificacion mrp": <FaCalendarWeek />,
-  "registrar nuevo empleado": <FaUserPlus />,
-  "calendario produccion": <CalendarProductionIcon />,
-};
-
 const DefaultIcon = <FaQuestionCircle />;
 
 function MenuPrincipal() {
@@ -150,23 +126,49 @@ function MenuPrincipal() {
     )
   }
 
-  // Helper elástico para remover acentos y dejar el texto plano para matchear perfecto
-  const normalizarTexto = (texto) => {
-    if (!texto) return "";
-    return texto
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // Remueve acentos
-      .trim();
+  // 🛡️ REFACTORIZADO: Extractor inteligente por palabras clave para blindaje absoluto de íconos
+  const obtenerIconoInteligente = (descripcionRaw, tituloRaw) => {
+    const desc = (descripcionRaw || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const tit = (tituloRaw || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    
+    // Evaluamos el contenido de la descripción o el título por prioridades
+    if (desc.includes("dashboard") || tit.includes("dashboard")) return <FaChartBar />;
+    if (desc.includes("configuracion") || desc.includes("metrica") || tit.includes("configuracion")) return <FaCog />;
+    if (desc.includes("empleado") || desc.includes("usuario") || tit.includes("empleado")) return <FaUserPlus />;
+    if (desc.includes("despacho") || tit.includes("despacho")) return <FaTruckLoading />;
+    if (desc.includes("trazabilidad") || desc.includes("buscar") || tit.includes("trazabilidad")) return <FaSearch />;
+    
+    // Lotes (Materias primas o Productos)
+    if (desc.includes("lotes") || tit.includes("lotes")) return <FaBarcode />;
+    
+    // Órdenes de trabajo
+    if (desc.includes("trabajo") || tit.includes("trabajo")) return <BiCalendarCheck />;
+    
+    // Líneas de producción
+    if (desc.includes("lineas") || tit.includes("lineas")) return <HiAdjustments />;
+    
+    // Planificación / Calendarios
+    if (desc.includes("calendario") || tit.includes("calendario")) return <CalendarProductionIcon />;
+    if (desc.includes("planificacion") || tit.includes("planificacion") || desc.includes("semanal")) return <FaCalendarWeek />;
+    
+    // Distinción entre Productos y Materias Primas
+    if (desc.includes("materia") || desc.includes("prima") || tit.includes("materia")) return <FaWarehouse />;
+    if (desc.includes("producto") || tit.includes("producto")) return <FaBoxes />;
+    
+    // Compras y Ventas generales
+    if (desc.includes("compra") || tit.includes("compra") || desc.includes("recepcion")) return <FaTruck />;
+    if (desc.includes("venta") || tit.includes("venta")) return <FaShoppingCart />;
+    if (desc.includes("produccion") || tit.includes("produccion")) return <FaIndustry />;
+
+    return DefaultIcon;
   };
 
   return (
     <div className={styles.home}>
       <div className={styles.content}>
         {(data || []).map(item => {
-          // Buscamos la descripción en minúsculas y sin acentos dentro del diccionario
-          const llaveBusqueda = normalizarTexto(item.descripcion);
-          const Icono = iconMap[llaveBusqueda] || DefaultIcon;
+          // Invocamos la función extractora pasándole los datos de la tarjeta
+          const Icono = obtenerIconoInteligente(item.descripcion, item.titulo);
 
           return (
             <div key={item.id_permiso} onClick={() => navigate(item.link)} className={styles.card}>
