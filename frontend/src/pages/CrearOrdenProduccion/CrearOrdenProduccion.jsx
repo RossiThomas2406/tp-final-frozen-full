@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "./CrearOrdenProduccion.module.css";
 
-// 🛡️ Aseguramos que la URL base termine con /api/ para que no se pierda el prefijo en Render
-const rawBaseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
+const rawBaseURL = import.meta.env.VITE_API_BASE_URL || "https://frozenback-test.up.railway.app"; 
+
+
 const cleanBaseURL = rawBaseURL.endsWith("/api") || rawBaseURL.endsWith("/api/") 
   ? rawBaseURL 
   : `${rawBaseURL.replace(/\/$/, "")}/api/`;
