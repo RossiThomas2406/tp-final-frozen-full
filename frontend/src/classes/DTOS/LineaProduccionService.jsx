@@ -1,189 +1,81 @@
-import axios from 'axios';
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+import axios from "axios";
+
+// 🚀 ENLAZADO: Dominio real y productivo de Render
+const BACKEND_URL = import.meta.env.VITE_API_BASE_URL || "https://frozen-backend-d5t3.onrender.com/api/";
+const cleanBaseURL = BACKEND_URL.endsWith("/") ? BACKEND_URL : `${BACKEND_URL}/`;
 
 const api = axios.create({
-  baseURL: baseURL,
+    baseURL: cleanBaseURL,
+    timeout: 10000,
 });
 
-class LineaProduccionService {
-  // Obtener todas las líneas de producción
-  // Método auxiliar para obtener la descripción del estado
-  static async obtenerDescripcionEstado(idEstado) {
-    if (!idEstado) return 'Sin estado';
-    
-    try {
-      const response = await api.get(`/produccion/estado_linea_produccion/${idEstado}/`);
-      console.log('Respuesta del endpoint de estado:', response.data); // Para depuración
-      
-      // Asegurarse de manejar diferentes estructuras de respuesta
-      const descripcion = response.data?.descripcion || 
-                         response.data?.data?.descripcion || 
-                         'Sin estado';
-      
-      console.log(`Estado ${idEstado} - Descripción:`, descripcion); // Para depuración
-      return descripcion;
-    } catch (error) {
-      console.error(`Error al obtener el estado ${idEstado}:`, error);
-      console.error('Detalles del error:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        url: error.config?.url
-      });
-      return 'Sin estado';
-    }
-  }
-
-  static async obtenerLineas() {
-      try {
-        console.log('Obteniendo líneas de producción...');
-        const response = await api.get('/produccion/lineas/');
-        console.log('Respuesta de /produccion/lineas/:', response.data);
-        
-        // BLINDAJE: Si por algún motivo el backend responde con HTML, lanzamos error controlado
-        if (typeof response.data === 'string' && response.data.includes('<!doctype html>')) {
-          throw new Error("El servidor respondió con HTML en lugar de JSON. Verifica la URL o autenticación.");
+const LineaProduccionService = {
+    // 🛡️ Obtener catálogo de líneas
+    obtenerLineas: async () => {
+        try {
+            console.log("Obteniendo líneas de producción desde Render...");
+            const response = await api.get("produccion/lineas/");
+            return response.data?.results || (Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            console.error("Error al obtener líneas de producción:", error);
+            throw error;
         }
+    },
 
-        const lineasData = response.data.results || response.data;
-        const lineasArray = Array.isArray(lineasData) ? lineasData : [lineasData];
-        
-        // Obtener todos los IDs de estado únicos
-        const idsEstados = [...new Set(
-          lineasArray
-            .map(linea => {
-              const estadoId = linea.id_estado_linea_produccion?.id_estado_linea_produccion || 
-                            linea.id_estado_linea_produccion;
-              return estadoId;
-            })
-            .filter(Boolean)
-        )];
-        
-        // Obtener las descripciones de los estados en paralelo
-        const estadosPromises = idsEstados.map(async (id) => ({
-          id,
-          descripcion: await this.obtenerDescripcionEstado(id)
-        }));
-        
-        const estados = await Promise.all(estadosPromises);
-        const estadosMap = new Map(estados.map(e => [e.id, e.descripcion]));
-        
-        // Mapear las líneas con sus estados correspondientes
-        const lineasConEstado = lineasArray.map(linea => {
-          const estadoId = linea.id_estado_linea_produccion?.id_estado_linea_produccion || 
-                          linea.id_estado_linea_produccion;
-          const estadoDesc = estadosMap.get(estadoId) || 'Sin estado';
-          
-          return {
-            id: linea.id_linea_produccion || linea.id,
-            descripcion: linea.descripcion,
-            capacidad_por_hora: linea.capacidad_por_hora,
-            id_estado_linea_produccion: estadoId,
-            estado: estadoDesc,
-            productos: linea.productos || []
-          };
-        });
-        
-        return lineasConEstado;
-      } catch (error) {
-        console.error('Error al obtener líneas de producción:', error);
-        throw error;
-      }
-    }
+    // 🛡️ Obtener estados de líneas
+    obtenerEstados: async () => {
+        try {
+            const response = await api.get("produccion/estado_linea_produccion/");
+            return response.data?.results || (Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            console.error("Error al obtener estados de línea de producción:", error);
+            throw error;
+        }
+    },
 
-  // Obtener una línea de producción por ID
-  static async obtenerLineaPorId(id) {
-    try {
-      const response = await api.get(`/produccion/lineas/${id}/`);
-      const linea = response.data;
-      
-      // Obtener la descripción del estado usando el endpoint específico
-      const estadoId = linea.id_estado_linea_produccion?.id_estado_linea_produccion || 
-                      linea.id_estado_linea_produccion;
-      
-      const estadoDesc = estadoId 
-        ? await this.obtenerDescripcionEstado(estadoId)
-        : 'Sin estado';
-      
-      return {
-        id: linea.id_linea_produccion || linea.id,
-        descripcion: linea.descripcion,
-        id_estado_linea_produccion: estadoId,
-        estado: estadoDesc,
-        productos: linea.productos || []
-      };
-    } catch (error) {
-      console.error(`Error al obtener línea de producción ${id}:`, error);
-      throw error;
-    }
-  }
+    // 🛡️ Crear nueva línea
+    crearLinea: async (datos) => {
+        try {
+            const response = await api.post("produccion/lineas/", datos);
+            return response.data;
+        } catch (error) {
+            console.error("Error al crear línea:", error);
+            throw error;
+        }
+    },
 
-  // Crear una nueva línea de producción
-  static async crearLinea(datos) {
-    try {
-      const response = await api.post('/produccion/lineas/', datos);
-      return response.data;
-    } catch (error) {
-      console.error('Error al crear línea de producción:', error);
-      throw error;
-    }
-  }
+    // 🛡️ Actualizar línea existente
+    actualizarLinea: async (id, datos) => {
+        try {
+            const response = await api.put(`produccion/lineas/${id}/`, datos);
+            return response.data;
+        } catch (error) {
+            console.error("Error al actualizar línea:", error);
+            throw error;
+        }
+    },
 
-  // Actualizar una línea de producción
-  static async actualizarLinea(id, datos) {
-    try {
-      const response = await api.patch(`/produccion/lineas/${id}/`, datos);
-      return response.data;
-    } catch (error) {
-      console.error(`Error al actualizar línea de producción ${id}:`, error);
-      throw error;
-    }
-  }
+    // 🛡️ Eliminar línea física
+    eliminarLinea: async (id) => {
+        try {
+            const response = await api.delete(`produccion/lineas/${id}/`);
+            return response.data;
+        } catch (error) {
+            console.error("Error al eliminar línea:", error);
+            throw error;
+        }
+    },
 
-  // Eliminar una línea de producción
-  static async eliminarLinea(id) {
-    try {
-      await api.delete(`/produccion/lineas/${id}/`);
-    } catch (error) {
-      console.error(`Error al eliminar línea de producción ${id}:`, error);
-      throw error;
+    // 🛡️ Listar productos asociados a la capacidad de la línea
+    obtenerProductosLinea: async (idLinea) => {
+        try {
+            const response = await api.get(`produccion/lineas-productos/?id_linea_produccion=${idLinea}`);
+            return response.data?.results || (Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            console.error(`Error al obtener productos de la línea ${idLinea}:`, error);
+            return [];
+        }
     }
-  }
-
-  // Obtener estados de línea de producción
-  static async obtenerEstados() {
-    try {
-      const response = await api.get('/produccion/estado_linea_produccion/');
-      const data = response.data.results || response.data;
-      const estadosArray = Array.isArray(data) ? data : [data];
-      
-      return estadosArray.map(estado => ({
-        id: estado.id_estado_linea_produccion || estado.id,
-        descripcion: estado.descripcion
-      }));
-    } catch (error) {
-      console.error('Error al obtener estados de línea de producción:', error);
-      throw error;
-    }
-  }
-
-  // Obtener productos de una línea de producción
-  static async obtenerProductosLinea(idLinea) {
-    try {
-      const response = await api.get(`/produccion/producto_linea/?id_linea_produccion=${idLinea}`);
-      
-      // Mapear la respuesta al formato esperado
-      return response.data.results.map(item => ({
-        id: item.id_producto_linea,
-        id_producto: item.id_producto?.id_producto || null,
-        nombre: item.id_producto?.descripcion || 'Producto sin nombre',
-        cant_por_hora: item.cant_por_hora || 0,
-        // Incluir más campos según sea necesario
-      }));
-    } catch (error) {
-      console.error(`Error al obtener productos de la línea ${idLinea}:`, error);
-      throw error;
-    }
-  }
-}
+};
 
 export default LineaProduccionService;

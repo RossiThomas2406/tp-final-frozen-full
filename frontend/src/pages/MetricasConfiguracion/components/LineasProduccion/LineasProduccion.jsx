@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Table, Button, Modal, Form, Input, Select, Space, Card, Typography, Tag } from 'antd';
+import { Table, Button, Modal, Form, Input, Select, Space, Typography, Tag } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, DownOutlined, RightOutlined } from '@ant-design/icons';
 import LineaProduccionService from '../../../../classes/DTOS/LineaProduccionService';
 import { toast } from 'react-hot-toast';
 
-// Estilos en línea para reemplazar el CSS module
 const styles = {
   container: {
     padding: '24px',
@@ -35,44 +34,10 @@ const LineasProduccion = () => {
   const [estados, setEstados] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [productos, setProductos] = useState([]);
-  const [lineaSeleccionada, setLineaSeleccionada] = useState(null);
+  const [productos, setProductos] = useState({});
   const [form] = Form.useForm();
   const [editingId, setEditingId] = useState(null);
   const [expandedRowKeys, setExpandedRowKeys] = useState([]);
-
-  // Cargar datos iniciales
-  useEffect(() => {
-    cargarDatos();
-  }, []);
-
-  // Manejar la expansión de filas
-  const handleExpand = (expanded, record) => {
-    if (expanded) {
-      // Si se está expandiendo, cargar los productos si no están cargados
-      if (!productos[record.id]) {
-        cargarProductosLinea(record.id);
-      }
-    }
-  };
-
-  // Función para mostrar el modal de agregar/editar
-  const mostrarModal = (record = null) => {
-    if (record) {
-      // Modo edición
-      setEditingId(record.id);
-      form.setFieldsValue({
-        descripcion: record.descripcion,
-        capacidad_por_hora: record.capacidad_por_hora,
-        id_estado_linea_produccion: record.id_estado_linea_produccion
-      });
-    } else {
-      // Modo nuevo
-      setEditingId(null);
-      form.resetFields();
-    }
-    setModalVisible(true);
-  };
 
   const cargarDatos = useCallback(async () => {
     try {
@@ -81,8 +46,8 @@ const LineasProduccion = () => {
         LineaProduccionService.obtenerLineas(),
         LineaProduccionService.obtenerEstados()
       ]);
-      setLineas(lineasData);
-      setEstados(estadosData);
+      setLineas(lineasData || []);
+      setEstados(estadosData || []);
     } catch (error) {
       console.error('Error al cargar los datos:', error);
       toast.error('Error al cargar los datos de líneas de producción');
@@ -90,6 +55,45 @@ const LineasProduccion = () => {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    cargarDatos();
+  }, [cargarDatos]);
+
+  const cargarProductosLinea = async (idLinea) => {
+    try {
+      const productosLinea = await LineaProduccionService.obtenerProductosLinea(idLinea);
+      setProductos(prev => ({
+        ...prev,
+        [idLinea]: productosLinea || []
+      }));
+    } catch (error) {
+      console.error(`Error al cargar productos de la línea ${idLinea}:`, error);
+      toast.error('No se pudieron cargar los productos de la línea');
+    }
+  };
+
+  const handleExpand = (expanded, record) => {
+    if (expanded && record && record.id) {
+      if (!productos[record.id]) {
+        cargarProductosLinea(record.id);
+      }
+    }
+  };
+
+  const mostrarModal = (record = null) => {
+    if (record) {
+      setEditingId(record.id);
+      form.setFieldsValue({
+        descripcion: record.descripcion,
+        id_estado_linea_produccion: record.id_estado_linea_produccion || record.id_estado
+      });
+    } else {
+      setEditingId(null);
+      form.resetFields();
+    }
+    setModalVisible(true);
+  };
 
   const handleSubmit = async () => {
     try {
@@ -115,15 +119,6 @@ const LineasProduccion = () => {
     }
   };
 
-  const handleEdit = (record) => {
-    form.setFieldsValue({
-      descripcion: record.descripcion,
-      id_estado_linea_produccion: record.id_estado
-    });
-    setEditingId(record.id);
-    setModalVisible(true);
-  };
-
   const handleDelete = async (id) => {
     try {
       setLoading(true);
@@ -133,6 +128,7 @@ const LineasProduccion = () => {
     } catch (error) {
       console.error('Error al eliminar la línea de producción:', error);
       toast.error('No se pudo eliminar la línea de producción');
+    } finally {
       setLoading(false);
     }
   };
@@ -150,45 +146,31 @@ const LineasProduccion = () => {
     setExpandedRowKeys(newExpandedRowKeys);
   };
 
-  const cargarProductosLinea = async (idLinea) => {
-    try {
-      setLoading(true);
-      const productosLinea = await LineaProduccionService.obtenerProductosLinea(idLinea);
-      setProductos(prev => ({
-        ...prev,
-        [idLinea]: productosLinea
-      }));
-    } catch (error) {
-      console.error(`Error al cargar productos de la línea ${idLinea}:`, error);
-      toast.error('No se pudieron cargar los productos de la línea');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const columns = [
     {
       title: 'Descripción',
       dataIndex: 'descripcion',
       key: 'descripcion',
-      width: '30%',
+      width: '40%',
     },
-
     {
       title: 'Estado',
       dataIndex: 'estado',
       key: 'estado',
-      width: '15%',
-      render: (estado) => (
-        <Tag color={estado === 'Disponible' || estado === 'Activo' ? 'green' : 'red'}>
-          {estado || 'Sin estado'}
-        </Tag>
-      ),
+      width: '25%',
+      render: (estado, record) => {
+        const displayEstado = estado || record.estado_descripcion || 'Disponible';
+        return (
+          <Tag color={displayEstado === 'Disponible' || displayEstado === 'Activo' ? 'green' : 'red'}>
+            {displayEstado}
+          </Tag>
+        );
+      },
     },
     {
       title: 'Acciones',
       key: 'acciones',
-      width: '30%',
+      width: '35%',
       render: (_, record) => (
         <Space size="middle">
           <Button 
@@ -203,7 +185,6 @@ const LineasProduccion = () => {
             }}
           >
             {expandedRowKeys.includes(record.id) ? 'Ocultar productos' : 'Ver productos'}
-            {record.productos?.length > 0 && ` (${record.productos.length})`}
           </Button>
           <Button 
             type="text" 
@@ -240,20 +221,14 @@ const LineasProduccion = () => {
     
     return (
       <div style={styles.expandedRow}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '16px'
-        }}>
-          <Typography.Text strong>Productos de la línea</Typography.Text>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <Typography.Text strong>Productos vinculados a la línea</Typography.Text>
           <Button 
             type="primary" 
             size="small"
             onClick={(e) => {
               e.stopPropagation();
-              // Aquí puedes agregar la lógica para agregar un nuevo producto
-              toast('Función para agregar producto pendiente', { icon: 'ℹ️' });
+              toast('Función para asociar capacidad de producto pendiente', { icon: 'ℹ️' });
             }}
           >
             Agregar Producto
@@ -261,67 +236,18 @@ const LineasProduccion = () => {
         </div>
         <Table
           columns={[
-            {
-              title: 'ID',
-              dataIndex: 'id',
-              key: 'id',
-              width: '10%',
-            },
-            {
-              title: 'Producto',
-              dataIndex: 'nombre',
-              key: 'nombre',
-              width: '60%',
-            },
-            {
-              title: 'Cantidad por hora',
-              dataIndex: 'cant_por_hora',
-              key: 'cant_por_hora',
-              width: '20%',
-              render: (cantidad) => `${cantidad} unidades/hora`,
-            },
-            {
-              title: 'Acciones',
-              key: 'acciones',
-              width: '10%',
-              render: (_, producto) => (
-                <Space>
-                  <Button 
-                    type="text" 
-                    icon={<EditOutlined style={{ color: '#1890ff' }} />} 
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Lógica para editar producto
-                      toast('Función de edición pendiente', { icon: 'ℹ️' });
-                    }}
-                  />
-                  <Button 
-                    type="text" 
-                    danger 
-                    icon={<DeleteOutlined />} 
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Lógica para eliminar producto
-                      Modal.confirm({
-                        title: '¿Eliminar producto de la línea?',
-                        content: 'Esta acción no se puede deshacer',
-                        okText: 'Sí, eliminar',
-                        okType: 'danger',
-                        cancelText: 'Cancelar',
-                        onOk: () => {
-                          toast('Función de eliminación pendiente', { icon: 'ℹ️' });
-                        },
-                      });
-                    }}
-                  />
-                </Space>
-              ),
-            },
+            { title: 'ID', dataIndex: 'id_producto', key: 'id_producto', width: '15%' },
+            { title: 'Producto', dataIndex: 'producto_nombre', key: 'producto_nombre', width: '50%' },
+            { 
+              title: 'Capacidad Operativa', 
+              dataIndex: 'cant_por_hora', 
+              key: 'cant_por_hora', 
+              width: '35%',
+              render: (cantidad) => `${cantidad || 0} unidades/hora`
+            }
           ]}
           dataSource={productosLinea}
-          rowKey="id"
+          rowKey="id_producto"
           pagination={false}
           size="small"
           bordered
@@ -339,7 +265,7 @@ const LineasProduccion = () => {
         <Button 
           type="primary" 
           icon={<PlusOutlined />} 
-          onClick={mostrarModal}
+          onClick={() => mostrarModal(null)}
         >
           Agregar Línea
         </Button>
@@ -362,21 +288,17 @@ const LineasProduccion = () => {
         style={{ width: '100%' }}
       />
 
-      {/* Modal para agregar/editar línea */}
       <Modal
         title={editingId ? 'Editar Línea de Producción' : 'Nueva Línea de Producción'}
         open={modalVisible}
         onOk={handleSubmit}
         confirmLoading={loading}
         onCancel={() => setModalVisible(false)}
-        destroyOnClose
+        destroyOnHidden // 🚀 MODIFICADO: Purgado atributo deprecado para satisfacción de Antd
       >
         <Form
           form={form}
           layout="vertical"
-          initialValues={{
-            id_estado_linea_produccion: estados[0]?.id
-          }}
         >
           <Form.Item
             name="descripcion"
@@ -393,7 +315,7 @@ const LineasProduccion = () => {
           >
             <Select placeholder="Seleccione un estado">
               {estados.map(estado => (
-                <Option key={estado.id} value={estado.id}>
+                <Option key={estado.id || estado.id_estado_linea_produccion} value={estado.id || estado.id_estado_linea_produccion}>
                   {estado.descripcion}
                 </Option>
               ))}
