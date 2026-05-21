@@ -2,10 +2,14 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "./CrearOrdenProduccion.module.css";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL;
+// 🛡️ Aseguramos que la URL base termine con /api/ para que no se pierda el prefijo en Render
+const rawBaseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const cleanBaseURL = rawBaseURL.endsWith("/api") || rawBaseURL.endsWith("/api/") 
+  ? rawBaseURL 
+  : `${rawBaseURL.replace(/\/$/, "")}/api/`;
 
 const api = axios.create({
-  baseURL: baseURL,
+  baseURL: cleanBaseURL,
   timeout: 10000,
 });
 
@@ -62,14 +66,13 @@ const CrearOrdenProduccion = () => {
     try {
       setLoading(true);
       
-      // 🚀 CORREGIDO: Apuntamos al endpoint principal que sí responde JSON paginado en Render
+      // Con la URL base unificada en /api/, esta llamada se concatena de forma perfecta
       const productosResponse = await api.get("productos/productos/");
 
       if (typeof productosResponse.data === 'string' && productosResponse.data.includes('<!doctype html>')) {
         throw new Error("El servidor devolvió un HTML de rescate en lugar del JSON de productos.");
       }
 
-      // Adaptador elástico para extraer del paginador .results o del array directo
       const productsArray = productosResponse.data?.results || (Array.isArray(productosResponse.data) ? productosResponse.data : []);
 
       if (!Array.isArray(productsArray)) {
@@ -270,7 +273,7 @@ const CrearOrdenProduccion = () => {
 
   const enviarOrdenProduccion = async (ordenData) => {
     try {
-      const response = await api.post("/produccion/ordenes/", ordenData);
+      const response = await api.post("produccion/ordenes/", ordenData);
       return response.data;
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message;
@@ -299,7 +302,6 @@ const CrearOrdenProduccion = () => {
       const ordenData = {
         id_supervisor: parseInt(idUsuario),
         id_producto: parseInt(formData.product),
-        amount: parseInt(formData.quantity), // Ajustado al serializador si pide amount o cantidad
         cantidad: parseInt(formData.quantity),
         fecha_inicio: formData.startDate,
       };
