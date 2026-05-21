@@ -190,27 +190,38 @@ const [orden, setOrden] = useState({
     fetchApis();
   }, []);
 
-  const obtenerProductos = async () => {
+const obtenerProductos = async () => {
     try {
-        const response = await api.get("/productos/productos/");
-        return response.data.results.map((prod) => ({
+        // 🛡️ CORREGIDO: Quitamos el slash inicial para respetar el prefijo /api/
+        const response = await api.get("productos/productos/");
+        
+        // 🛡️ Blindaje anti-HTML string de SPA
+        if (typeof response.data === 'string' && response.data.includes('<!doctype html>')) {
+            return [];
+        }
+
+        // 🛡️ Extrae la lista real se encuentre paginada o plana directo
+        const listaOriginal = response.data?.results || (Array.isArray(response.data) ? response.data : []);
+
+        return listaOriginal.map((prod) => ({
             id_producto: prod.id_producto,
-            nombre: prod.nombre,
-            descripcion: prod.descripcion,
-            unidad_medida: prod.unidad?.descripcion || 'N/A',
-            umbral_minimo: prod.umbral_minimo,
-            precio: prod.precio,
+            nombre: prod.nombre || "Producto sin nombre",
+            descripcion: prod.descripcion || "",
+            unidad_medida: prod.id_unidad?.descripcion || prod.unidad?.descripcion || 'Unidades',
+            umbral_minimo: prod.umbral_minimo || 0,
+            precio: prod.precio_venta || prod.precio || 0, // Soportar la columna real de Supabase
         }));
     } catch (error) {
         console.error("Error obteniendo productos:", error);
         toast.error("No se pudieron cargar los productos");
-        return [];
+        return []; // Fallback seguro para evitar que rompa el flujo de promesas
     }
   };
 
   const obtenerClientes = async () => {
     try {
-        return await api.get("/ventas/clientes/");
+        // 🛡️ CORREGIDO: Sin slash inicial descarrilador
+        return await api.get("ventas/clientes/");
     } catch (error) {
         console.error("Error obteniendo clientes:", error);
         toast.error("No se pudieron cargar los clientes");
@@ -220,7 +231,8 @@ const [orden, setOrden] = useState({
 
   const obtenerPrioridades = async () => {
     try {
-        return await api.get("/ventas/prioridades/");
+        // 🛡️ CORREGIDO: Sin slash inicial descarrilador
+        return await api.get("ventas/prioridades/");
     } catch (error) {
         console.error("Error obteniendo prioridades:", error);
         toast.error("No se pudieron cargar las prioridades");
