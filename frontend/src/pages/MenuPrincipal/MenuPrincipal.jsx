@@ -126,13 +126,13 @@ function MenuPrincipal() {
     )
   }
 
-// 🛡️ CORREGIDO: Ajuste estricto de palabras clave para eliminar opciones fantasma
+  // Extractor inteligente por palabras clave para blindaje absoluto de íconos
   const obtenerIconoInteligente = (descripcionRaw, tituloRaw) => {
     const desc = (descripcionRaw || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const tit = (tituloRaw || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     
     if (desc.includes("dashboard") || tit.includes("dashboard")) return <FaChartBar />;
-    if (desc.includes("configuracion") || desc.includes("metricas y") || tit.includes("configuracion")) return <FaCog />;
+    if (desc.includes("configuracion") || desc.includes("metricas") || tit.includes("configuracion")) return <FaCog />;
     if (desc.includes("empleado") || desc.includes("usuario") || tit.includes("empleado")) return <FaUserPlus />;
     if (desc.includes("despacho") || tit.includes("despacho")) return <FaTruckLoading />;
     if (desc.includes("trazabilidad") || tit.includes("trazabilidad")) return <FaSearch />;
@@ -150,11 +150,11 @@ function MenuPrincipal() {
     if (desc.includes("calendario") || tit.includes("calendario")) return <CalendarProductionIcon />;
     if (desc.includes("planificacion") || tit.includes("planificacion") || desc.includes("semanal")) return <FaCalendarWeek />;
     
-    // Stock / Almacén (Materias primas o Productos)
+    // Almacén y Stocks específicos
     if (desc.includes("materia") || desc.includes("prima") || tit.includes("materia")) return <FaWarehouse />;
-    if (desc.includes("stock productos") || tit.includes("stock productos") || desc.includes("ver stock productos")) return <FaBoxes />;
+    if (desc.includes("producto") || tit.includes("producto") || desc.includes("stock")) return <FaBoxes />;
     
-    // Compras y Ventas
+    // Compras y Ventas generales
     if (desc.includes("compra") || tit.includes("compra") || desc.includes("recepcion")) return <FaTruck />;
     if (desc.includes("venta") || tit.includes("venta")) return <FaShoppingCart />;
     if (desc.includes("produccion") || tit.includes("produccion")) return <FaIndustry />;
@@ -165,19 +165,27 @@ function MenuPrincipal() {
   return (
     <div className={styles.home}>
       <div className={styles.content}>
-        {(data || []).map(item => {
-          // Invocamos la función extractora pasándole los datos de la tarjeta
-          const Icono = obtenerIconoInteligente(item.descripcion, item.titulo);
+        {(data || [])
+          // 🛡️ FILTRO QUIRÚRGICO: Purgamos cualquier opción vinculada al panel principal
+          .filter(item => {
+            const desc = (item.descripcion || "").toLowerCase();
+            const tit = (item.titulo || "").toLowerCase();
+            return !desc.includes("panel principal") && !tit.includes("panel principal");
+          })
+          .map(item => {
+            const Icono = obtenerIconoInteligente(item.descripcion, item.titulo);
 
-          return (
-            <div key={item.id_permiso} onClick={() => navigate(item.link)} className={styles.card}>
-              <div className={styles.cardIcon}>
-                {Icono}
+            return (
+              <div key={item.id_permiso} onClick={() => navigate(item.link)} className={styles.card}>
+                <div className={styles.cardIcon}>
+                  {Icono}
+                </div>
+                <div className={styles.cardInfo}>
+                  <p className={styles.cardDescription}>{item.descripcion}</p>
+                </div>
               </div>
-              <p className={styles.cardDescription}>{item.descripcion}</p>
-            </div>
-          )
-        })}
+            )
+          })}
       </div>
     </div>
   )
