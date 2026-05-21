@@ -75,48 +75,84 @@ const CrearOrdenProduccion = () => {
 
   // Efecto para cargar productos
   useEffect(() => {
+// Efecto para cargar productos
+  useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
 
-        // Realizar solo la petición de productos
-        const productosResponse = await api.get("/productos/listar/");
+        // 🛡️ CORREGIDO: Quitamos el slash inicial para respetar el prefijo /api/
+        const productosResponse = await api.get("productos/listar/");
 
-        // Procesar productos
-        const productsArray = productosResponse.data.results;
+        // 🛡️ Blindaje anti-HTML: Si se cuela un string de la SPA, lo tratamos como vacío
+        if (typeof productosResponse.data === 'string' && productosResponse.data.includes('<!doctype html>')) {
+          throw new Error("El servidor devolvió un HTML en lugar del JSON de productos.");
+        }
+
+        // 🛡️ Extraer el listado de productos de forma elástica (venga empaquetado o plano)
+        const productsArray = productosResponse.data?.results || (Array.isArray(productosResponse.data) ? productosResponse.data : []);
+
         if (!Array.isArray(productsArray)) {
-          throw new Error(
-            "La respuesta de productos no contiene un formato válido"
-          );
+          throw new Error("La respuesta de productos no contiene un formato válido");
         }
 
         const transformedProducts = productsArray.map((product) => ({
-          value: product.id_producto.toString(),
-          label: product.nombre,
-          descripcion: product.descripcion,
-          unidad_medida: product.unidad_medida,
+          value: (product.id_producto || product.id || "").toString(),
+          label: product.nombre || "Producto sin nombre",
+          descripcion: product.descripcion || "",
+          unidad_medida: product.unidad?.descripcion || product.unidad_medida || "Unidades",
         }));
 
         if (transformedProducts.length === 0) {
-          throw new Error("No se encontraron productos");
+          throw new Error("No se encontraron productos en el catálogo");
         }
 
         setProductOptions(transformedProducts);
 
-        // --- Lógica de cargar líneas de producción eliminada ---
       } catch (error) {
         console.error("Error fetching data:", error);
         const errorMessage = error.response?.data?.message || error.message;
         showAlert("Error al cargar los datos: " + errorMessage, "error");
 
-        if (error.message.includes("productos")) {
-          setProductOptions([]);
-        }
-        // --- Manejo de error de líneas eliminado ---
-      } finally {
+        setProductOptions([]);
+      } {
         setLoading(false);
       }
     };
+
+    // Obtener responsable e id_usuario del localStorage
+    const obtenerUsuario = () => {
+      try {
+        const usuarioStorage = localStorage.getItem("usuario");
+        if (usuarioStorage) {
+          const usuario = JSON.parse(usuarioStorage);
+          if (usuario.nombre && usuario.apellido) {
+            setResponsable(`${usuario.nombre} ${usuario.apellido}`);
+          }
+          if (usuario.id_empleado) {
+            setIdUsuario(usuario.id_empleado.toString());
+          }
+        }
+      } catch (error) {
+        console.error("Error al obtener datos del usuario:", error);
+        setResponsable("Usuario no identificado");
+      }
+    };
+
+    // Inicializar fecha en MAÑANA
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowISO = tomorrow.toISOString().split("T")[0];
+
+    setFormData((prev) => ({
+      ...prev,
+      startDate: tomorrowISO,
+    }));
+
+    obtenerUsuario();
+    fetchData();
+  }, []);
 
     // Obtener responsable e id_usuario del localStorage
     const obtenerUsuario = () => {
